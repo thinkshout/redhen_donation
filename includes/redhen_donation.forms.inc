@@ -730,8 +730,9 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation) {
       $descriptions[$product_id]
         = redhen_donation_product_description($product_wrapper);
     }
-    $product_label = isset($settings['settings']['commerce']['product_options']['product_select_label']) ?
-      $settings['settings']['commerce']['product_options']['product_select_label'] : t('Donation Type');
+    $product_label = $settings['settings']['commerce']['product_options']['product_select_label'] == "" ?
+      t('Donation Type') :
+      $settings['settings']['commerce']['product_options']['product_select_label'];
     $form['product'] = array(
       '#type' => 'radios',
       '#title' => $product_label,
