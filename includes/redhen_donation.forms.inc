@@ -844,7 +844,9 @@ function redhen_donation_form_submit($form, &$form_state) {
 
   // Does a contact already exist with that email address?
   if (is_null($contact->contact_id)) {
-    $contact_email_search = current(redhen_contact_load_by_mail($form_state['values']['email']));
+    $contact_email_search = redhen_contact_load_by_mail($form_state['values']['email']);
+    $contact_email_search = $contact_email_search == FALSE ? NULL :
+      current($contact_email_search);
     $contact = is_null($contact_email_search) ? $contact : $contact_email_search;
   }
 
