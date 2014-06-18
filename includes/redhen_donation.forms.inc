@@ -224,6 +224,8 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
     '' => t('None'),
   );
 
+  $rec_product_options = array();
+
   $query = new EntityFieldQuery();
   $query->entityCondition('entity_type', 'commerce_product')
     ->propertyCondition('status', 1)
@@ -269,16 +271,24 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
     '#default_value' => $settings['settings']['commerce']['product_options']['one_time_product'],
   );
 
-  $form['commerce']['product_options']['recurring'] = array(
-    '#type' => 'checkboxes',
-    '#multiple' => TRUE,
-    '#title' => t('Recurring Product'),
-    '#options' => $rec_product_options,
-    '#default_value' => $settings['settings']['commerce']['product_options']['recurring'],
-    '#description' => t('Choose a recurring product.'),
-  );
-  foreach ($form['commerce']['product_options']['recurring']['#options'] as $key => $label) {
-    $form['commerce']['product_options']['recurring'][$key]['#description'] = $rec_product_description[$key];
+  if (count($rec_product_options) >= 1) {
+    $form['commerce']['product_options']['recurring'] = array(
+      '#type' => 'checkboxes',
+      '#multiple' => TRUE,
+      '#title' => t('Recurring Product'),
+      '#options' => $rec_product_options,
+      '#default_value' => $settings['settings']['commerce']['product_options']['recurring'],
+      '#description' => t('Choose a recurring product.'),
+    );
+    foreach ($form['commerce']['product_options']['recurring']['#options'] as $key => $label) {
+      $form['commerce']['product_options']['recurring'][$key]['#description'] = $rec_product_description[$key];
+    }
+  }
+  else {
+    $form['commerce']['product_options']['recurring'] = array(
+     '#type' => 'hidden',
+     '#value' => array(),
+    );
   }
 
   if ($address_fields) {
