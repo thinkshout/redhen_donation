@@ -588,8 +588,11 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation) {
     // Remove fields as defined in settings.
     $fields = field_info_instances('redhen_contact', $contact_type);
     foreach ($fields as $field) {
-      $field_info = field_info_field($field);
-      $field_setting = $settings['settings']['redhen_fields']['fields'][$field_info['field_name']];
+      $field_info = field_info_field($field['field_name']);
+      // Check for field settings.
+      $field_setting = isset($settings['settings']['redhen_fields']['fields'][$field_info['field_name']])
+        ? $settings['settings']['redhen_fields']['fields'][$field_info['field_name']]
+        : NULL;
       if ($field_info['type'] != 'addressfield' && $field_setting) {
         $form['redhen_contact']['form'][$field_info['field_name']]['#access'] = TRUE;
       }
