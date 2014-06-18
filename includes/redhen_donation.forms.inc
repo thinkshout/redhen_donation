@@ -941,7 +941,7 @@ function redhen_donation_form_submit($form, &$form_state) {
     }
   }
 
-  redhen_donation_update_line_item_price($line_item, $donation_amount, $product, $currency);
+  redhen_donation_update_line_item_price($line_item, $donation_amount, $currency);
   // Save the line item to get the ID.
   commerce_line_item_save($line_item);
   // Add the item to the list of line items.
@@ -1176,35 +1176,24 @@ function redhen_donation_form_refresh(&$form, &$form_state) {
  *   Commerce Line Item.
  * @param string $decimal_amount
  *   Item amount.
- * @param mixed $product
- *   Commerce Product.
  * @param string $currency
  *   Item currency.
  */
-function redhen_donation_update_line_item_price(&$line_item, $decimal_amount, $product = FALSE, $currency = 'USD') {
-  // TODO: Refactor.
+function redhen_donation_update_line_item_price(&$line_item, $decimal_amount, $currency = 'USD') {
   $wrapper = entity_metadata_wrapper('commerce_line_item', $line_item);
   $wrapper->commerce_unit_price->currency_code = $currency;
-  $unit_price = commerce_price_wrapper_value($wrapper, 'commerce_unit_price', TRUE);
 
-  // Calculate the updated amount and create a price array representing the
-  // difference between it and the current amount.
-  $current_amount = $unit_price['amount'];
-  $updated_amount = $decimal_amount;
-  $difference = array(
-    'amount' => $updated_amount - $current_amount,
-    'currency_code' => $currency,
-    'data' => array(),
-  );
-
-  $wrapper->commerce_unit_price->amount->set(NULL);
-  $wrapper->commerce_unit_price->amount = $updated_amount;
+  $wrapper->commerce_unit_price->amount->set($decimal_amount);
   $wrapper->commerce_unit_price->data = commerce_price_component_delete(0, 'base_price');
 
   $wrapper->commerce_unit_price->data = commerce_price_component_add(
     $wrapper->commerce_unit_price->value(),
     'base_price',
-    $difference,
+    array(
+      'amount' => $decimal_amount,
+      'currency_code' => $currency,
+      'data' => array(),
+    ),
     TRUE
   );
 }
