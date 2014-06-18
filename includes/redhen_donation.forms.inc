@@ -1027,13 +1027,11 @@ function redhen_donation_form_submit($form, &$form_state) {
 
   // Save the donation and redirect.
   if (redhen_donation_save($donation)) {
-    redhen_set_message(t('Donation has been saved.'));
     watchdog('redhen_donation', 'RedHen Donation %donation_id has been saved.',
       array('%donation_id' => $donation->donation_id),
       WATCHDOG_NOTICE
     );
 
-    redhen_set_message($message);
     if ($settings['settings']['donation_settings']['confirmation_page'] == '') {
       drupal_set_message(t('Thank you for your donation.'));
     }
