@@ -656,8 +656,8 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation) {
   }
 
   $donation_amounts = array();
-  foreach ($settings['settings']['donation_settings']['donation_amounts'] as $amount) {
-    $donation_amounts[$amount * 100] = $amount;
+  foreach ($settings['settings']['donation_settings']['donation_amounts'] as $amount => $description) {
+    $donation_amounts[$amount * 100] = $description;
   }
 
   switch ($settings['settings']['donation_settings']['donation_entry']) {
@@ -684,8 +684,8 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation) {
         '#other_description' => t('Please enter an amount.'),
         '#other_unknown_defaults' => 'other',
         '#other_delimiter' => ', ',
-        '#select_type' => $settings['settings']['donation_entry'] ==
-        'select_other' ? 'select' : 'radios',
+        '#select_type' => $settings['settings']['donation_settings']['donation_entry'] ==
+          'select_other' ? 'select' : 'radios',
       );
 
       break;
