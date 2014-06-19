@@ -623,8 +623,12 @@ function redhen_donation_convert_form_settings($values) {
     'status' => $values['status'],
     'settings' => serialize(array(
       'donation_settings' => $values['settings'],
-      'commerce' => $values['commerce'],
-      'redhen_fields' => $values['redhen_field_selector'],
+      'commerce' => isset($values['commerce']) ?
+        $values['commerce'] :
+        NULL,
+      'redhen_fields' => isset($values['redhen_field_selector']) ?
+        $values['redhen_field_selector'] :
+        NULL,
     )),
     'open' => NULL,
     'close' => NULL,
