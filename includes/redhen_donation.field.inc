@@ -32,55 +32,6 @@ function redhen_donation_field_info() {
 }
 
 /**
- * Implements hook_field_instance_settings_form().
- *
- * Add default donation field instance settings.
- */
-function redhen_donation_field_instance_settings_form($field, $instance) {
-  $form = $form_state = array();
-  $default_settings = isset($instance['settings']['default_redhen_donation_settings']) ? $instance['settings']['default_redhen_donation_settings'] : array();
-
-  // Flatten scheduling and reminder settings since this form is in tree mode.
-  foreach ($default_settings as $key => $val) {
-    if ($key != 'settings' and is_array($val)) {
-      foreach ($val as $key1 => $val1) {
-        if (is_array($val1)) {
-          foreach ($val1 as $key2 => $val2) {
-            $default_settings[$key2] = $val2;
-          }
-        }
-        else {
-          $default_settings[$key1] = $val1;
-        }
-      }
-      unset($default_settings[$key]);
-    }
-  }
-
-  $settings_form = redhen_donation_entity_settings_form($form, $form_state, $default_settings);
-
-  $form['default_redhen_donation_settings'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Default donation settings'),
-    '#collapsible' => TRUE,
-    '#description' => t("These settings will be applied when an entity with this field is saved and does not yet have it's own settings applied."),
-  );
-
-  // Unset the save button just in case.
-  unset($settings_form['save']);
-  $form['default_redhen_donation_settings'] += $settings_form;
-
-  return $form;
-}
-
-/**
- * Implements hook_field_validate().
- */
-function redhen_donation_field_validate($entity_type, $entity, $field, $instance, $langcode, $items, &$errors) {
-  // @TODO: validation
-}
-
-/**
  * Implements hook_field_is_empty().
  */
 function redhen_donation_field_is_empty($item, $field) {
@@ -254,6 +205,7 @@ function redhen_donation_field_formatter_view($entity_type, $entity, $field, $in
  */
 function redhen_donation_form_field_ui_field_edit_form_alter(&$form, &$form_state, $form_id) {
   if ($form['#field']['type'] == 'redhen_donation') {
+    $form['field']['#access'] = FALSE;
     $form['field']['cardinality']['#default_value'] = 1;
     $form['field']['cardinality']['#access'] = FALSE;
     $form['#validate'][] = 'redhen_donation_form_field_ui_field_edit_form_validate';
@@ -269,20 +221,6 @@ function redhen_donation_form_field_ui_field_edit_form_validate(&$form, &$form_s
   if ($form['#field']['type'] == 'redhen_donation') {
     if ($form_state['values']['field']['cardinality'] !== 1) {
       form_set_error('cardinality', t('Cardinality on donation fields must be set to one.'));
-    }
-
-    // Validate default donation settings.
-    $default_settings = $form_state['values']['instance']['settings']['default_redhen_donation_settings'];
-    $base_elem_key = 'instance][settings][default_redhen_donation_settings][';
-
-    // Validate open date.
-    if (!empty($default_settings['scheduling']['open']) && strtotime($default_settings['scheduling']['open']) === FALSE) {
-      form_set_error($base_elem_key . 'scheduling][open', t('Date is invalid.'));
-    }
-
-    // Validate close date.
-    if (!empty($default_settings['scheduling']['close']) && strtotime($default_settings['scheduling']['close']) === FALSE) {
-      form_set_error($base_elem_key . 'scheduling][close', t('Date is invalid.'));
     }
   }
 }
