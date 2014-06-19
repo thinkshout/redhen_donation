@@ -113,27 +113,34 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
   $form['settings']['confirmation_page'] = array(
     '#type' => 'textfield',
     '#title' => t('Confirmation page'),
-    '#default_value' => $settings['settings']['donation_settings']['confirmation_page'],
+    '#default_value' => isset($settings['settings']['donation_settings']['confirmation_page']) ?
+        $settings['settings']['donation_settings']['confirmation_page'] :
+        '',
     '#description' => t('Set the URL of the confirmation page. If not set,
-      the form will redirect to itself with a "Thank you" message.'),
+    the form will redirect to itself with a "Thank you" message.'),
   );
 
   $form['settings']['donation_entry'] = array(
     '#type' => 'select',
     '#title' => t('Donation entry'),
-    '#default_value' => $settings['settings']['donation_settings']['donation_entry'],
+    '#default_value' => isset($settings['settings']['donation_settings']['donation_entry']) ?
+        $settings['settings']['donation_settings']['donation_entry'] :
+        '',
     '#options' => array(
       'select' => t('Select list'),
       'select_other' => t("Select list (with 'other' option)"),
       'radio_other' => t("Radio options (with 'other' option)"),
-      'custom' => t('Text field (custom amount)')),
+      'custom' => t('Text field (custom amount)')
+    ),
     '#description' => t('Select the type of amount widget.'),
   );
 
   $form['settings']['donation_amounts'] = array(
     '#type' => 'textarea',
     '#title' => t('Donation amounts'),
-    '#default_value' => redhen_allowed_amounts_string($settings['settings']['donation_settings']['donation_amounts']),
+    '#default_value' => isset($settings['settings']['donation_settings']['donation_amounts']) ?
+        redhen_allowed_amounts_string($settings['settings']['donation_settings']['donation_amounts']) :
+        '',
     '#states' => array(
       'invisible' => array(
         ':input[name="settings[donation_entry]"]' => array(
@@ -147,7 +154,9 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
   $form['settings']['minimum_donation'] = array(
     '#type' => 'textfield',
     '#title' => t('Minimum donation'),
-    '#default_value' => $settings['settings']['donation_settings']['minimum_donation'],
+    '#default_value' => isset($settings['settings']['donation_settings']['minimum_donation']) ?
+        $settings['settings']['donation_settings']['minimum_donation'] :
+        '',
     '#description' => t('Enter the minimum allowed donation as an integer. Leave blank for no minimum.'),
     '#states' => array(
       'invisible' => array(
@@ -161,7 +170,9 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
   $form['settings']['maximum_donation'] = array(
     '#type' => 'textfield',
     '#title' => t('Maximum donation'),
-    '#default_value' => $settings['settings']['donation_settings']['maximum_donation'],
+    '#default_value' => isset($settings['settings']['donation_settings']['maximum_donation']) ?
+        $settings['settings']['donation_settings']['maximum_donation'] :
+        '',
     '#description' => t('Enter the maximum allowed donation as an integer. Leave blank for no maximum.'),
     '#states' => array(
       'invisible' => array(
@@ -206,7 +217,9 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
   $form['redhen_field_selector']['fields'] = array(
     '#type' => 'checkboxes',
     '#options' => $other_fields,
-    '#default_value' => $settings['settings']['redhen_fields']['fields'],
+    '#default_value' => isset($settings['settings']['redhen_fields']['fields']) ?
+        $settings['settings']['redhen_fields']['fields'] :
+        array(),
     // Adding break for readability.
     '#prefix' => '<br/>',
   );
@@ -306,32 +319,6 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
     );
   }
 
-  $form['commerce']['payment_options'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Payment Methods'),
-    '#collapsible' => FALSE,
-    '#collapsed' => FALSE,
-    '#tree' => TRUE,
-    '#id' => 'edit-redhen-donation-payment-options-wrapper',
-    '#description' => t('Select the payment methods that will be available on
-      the form. If a recurring product is used, ensure that methods that
-      support Commerce Recurring.'),
-  );
-
-  $form['commerce']['payment_options']['payment_methods'] = array(
-    '#theme' => 'redhen_donation_payment_options_form_table',
-    '#tree' => TRUE,
-    '#header' => array(
-      'payment_method' => t('Payment method'),
-      'label' => t('Label'),
-      'currency' => t('Currency Label'),
-      'delete' => t('Delete'),
-    ),
-    '#attributes' => array(
-      'id' => array('edit-redhen-donation-payment-options'),
-    ),
-  );
-
   // Get Payment Methods.
   $conditions = array(
     'event' => 'commerce_payment_methods',
@@ -352,63 +339,114 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
 
   $methods = redhen_donation_get_payment_methods($form_state);
 
-  foreach ($methods as $delta => $value) {
-    $row_id = 'edit-payment-methods-' . $delta;
-    $form['commerce']['payment_options']['payment_methods'][$delta] = array(
-      '#type' => 'container',
-      '#attributes' => array(
-        'id' => array($row_id),
-      ),
-    );
-    $row = &$form['commerce']['payment_options']['payment_methods'][$delta];
-
-    $row['payment_method'] = array(
-      '#type' => 'select',
-      '#options' => $payment_options,
-      '#default_value' => $form_state['methods'][$delta]['payment_method'],
-    );
-    $row['label'] = array(
-      '#type' => 'textfield',
-      '#size' => 20,
-      '#default_value' => $form_state['methods'][$delta]['label'],
-    );
-    $currency_options = array();
-    $currencies = commerce_currencies(TRUE);
-    foreach ($currencies as $currency) {
-      $currency_options[$currency['code']] = $currency['name'] . ' (' . $currency['symbol'] . ')';
-    }
-
-    $row['currency'] = array(
-      '#type' => 'select',
-      '#options' => $currency_options,
-      '#default_value' => $form_state['methods'][$delta]['currency'],
-    );
-    $row['delete'] = array(
-      '#id' => 'edit-delete-' . $delta,
-      '#type' => 'checkbox',
-      '#value' => t('Delete'),
-      '#name' => 'delete_method-' . $delta,
-      '#ajax' => array(
-        'callback' => 'redhen_donation_settings_form_callback',
-        'wrapper' => 'edit-redhen-donation-payment-options-wrapper',
-        'delta' => $delta,
+  if (empty($payment_options)) {
+    $form['commerce']['payment_options'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Payment Methods'),
+      '#collapsible' => FALSE,
+      '#collapsed' => FALSE,
+      '#tree' => TRUE,
+      '#id' => 'edit-redhen-donation-payment-options-wrapper',
+      '#description' => t('Please configure/enable a <a href="@link">' .
+        'valid payment method</a>.',
+        array(
+          '@link' => '/admin/commerce/config/payment-methods'
+        )
       ),
     );
   }
+  else {
+    $form['commerce']['payment_options'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Payment Methods'),
+      '#collapsible' => FALSE,
+      '#collapsed' => FALSE,
+      '#tree' => TRUE,
+      '#id' => 'edit-redhen-donation-payment-options-wrapper',
+      '#description' => t('Select the payment methods that will be available on
+        the form. If a recurring product is used, ensure that methods that
+        support Commerce Recurring.'),
+    );
 
-  $form['commerce']['payment_options']['add_field'] = array(
-    '#value' => t('Add another payment method'),
-    '#id' => 'edit-donation-add-payment-method',
-    '#name' => 'donation_add_field',
-    '#type' => 'button',
-    '#description' => t('Add one or more payment methods.'),
-    '#executes_submit_callback' => FALSE,
-    '#limit_validation_errors' => array(),
-    '#ajax' => array(
-      'callback' => 'redhen_donation_settings_form_callback',
-      'wrapper' => 'edit-redhen-donation-payment-options-wrapper',
-    ),
-  );
+    $form['commerce']['payment_options']['payment_methods'] = array(
+      '#theme' => 'redhen_donation_payment_options_form_table',
+      '#tree' => TRUE,
+      '#header' => array(
+        'payment_method' => t('Payment method'),
+        'label' => t('Label'),
+        'currency' => t('Currency Label'),
+        'delete' => t('Delete'),
+      ),
+      '#attributes' => array(
+        'id' => array('edit-redhen-donation-payment-options'),
+      ),
+    );
+
+    foreach ($methods as $delta => $value) {
+      $row_id = 'edit-payment-methods-' . $delta;
+      $form['commerce']['payment_options']['payment_methods'][$delta] = array(
+        '#type' => 'container',
+        '#attributes' => array(
+          'id' => array($row_id),
+        ),
+      );
+      $row = &$form['commerce']['payment_options']['payment_methods'][$delta];
+
+      $row['payment_method'] = array(
+        '#type' => 'select',
+        '#options' => $payment_options,
+        '#default_value' => isset($form_state['methods'][$delta]['payment_method']) ?
+            $form_state['methods'][$delta]['payment_method'] :
+            0,
+      );
+      $row['label'] = array(
+        '#type' => 'textfield',
+        '#size' => 20,
+        '#default_value' => isset($form_state['methods'][$delta]['label']) ?
+            $form_state['methods'][$delta]['label'] :
+            '',
+      );
+      $currency_options = array();
+      $currencies = commerce_currencies(TRUE);
+      foreach ($currencies as $currency) {
+        $currency_options[$currency['code']] = $currency['name'] . ' (' . $currency['symbol'] . ')';
+      }
+
+      $row['currency'] = array(
+        '#type' => 'select',
+        '#options' => $currency_options,
+        '#default_value' => isset($form_state['methods'][$delta]['currency']) ?
+            $form_state['methods'][$delta]['currency'] :
+            0,
+      );
+      $row['delete'] = array(
+        '#id' => 'edit-delete-' . $delta,
+        '#type' => 'checkbox',
+        '#value' => t('Delete'),
+        '#name' => 'delete_method-' . $delta,
+        '#ajax' => array(
+          'callback' => 'redhen_donation_settings_form_callback',
+          'wrapper' => 'edit-redhen-donation-payment-options-wrapper',
+          'delta' => $delta,
+        ),
+      );
+    }
+
+    $form['commerce']['payment_options']['add_field'] = array(
+      '#value' => t('Add another payment method'),
+      '#id' => 'edit-donation-add-payment-method',
+      '#name' => 'donation_add_field',
+      '#type' => 'button',
+      '#description' => t('Add one or more payment methods.'),
+      '#executes_submit_callback' => FALSE,
+      '#limit_validation_errors' => array(),
+      '#ajax' => array(
+        'callback' => 'redhen_donation_settings_form_callback',
+        'wrapper' => 'edit-redhen-donation-payment-options-wrapper',
+      ),
+    );
+
+  }
 
   // Only show save if we're not on the field instance defaults.
   if ($entity_id) {
@@ -497,7 +535,7 @@ function redhen_donation_entity_settings_form_validate($form, &$form_state) {
 
   // Validate payment methods:
   if (!isset($form_state['values']['commerce']['payment_options']['payment_methods'])) {
-    form_set_error('payment_methods', t('Must select at lest one payment method.'));
+    form_set_error('payment_methods', t('Must select at least one payment method.'));
   }
 }
 
