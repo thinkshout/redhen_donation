@@ -347,11 +347,8 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
       '#collapsed' => FALSE,
       '#tree' => TRUE,
       '#id' => 'edit-redhen-donation-payment-options-wrapper',
-      '#description' => t('Please configure/enable a <a href="@link">' .
-        'valid payment method</a>.',
-        array(
-          '@link' => '/admin/commerce/config/payment-methods'
-        )
+      '#description' => t('Please configure and/or enable a valid !link.',
+        array('!link' => l(t('payment method'), '/admin/commerce/config/payment-methods'))
       ),
     );
   }
