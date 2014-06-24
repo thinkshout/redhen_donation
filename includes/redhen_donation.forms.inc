@@ -113,9 +113,7 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
   $form['settings']['confirmation_page'] = array(
     '#type' => 'textfield',
     '#title' => t('Confirmation page'),
-    '#default_value' => isset($settings['settings']['donation_settings']['confirmation_page']) ?
-        $settings['settings']['donation_settings']['confirmation_page'] :
-        '',
+    '#default_value' => isset($settings['settings']['donation_settings']['confirmation_page']) ? $settings['settings']['donation_settings']['confirmation_page'] : '',
     '#description' => t('Set the URL of the confirmation page. If not set,
     the form will redirect to itself with a "Thank you" message.'),
   );
@@ -123,14 +121,12 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
   $form['settings']['donation_entry'] = array(
     '#type' => 'select',
     '#title' => t('Donation entry'),
-    '#default_value' => isset($settings['settings']['donation_settings']['donation_entry']) ?
-        $settings['settings']['donation_settings']['donation_entry'] :
-        '',
+    '#default_value' => isset($settings['settings']['donation_settings']['donation_entry']) ? $settings['settings']['donation_settings']['donation_entry'] : '',
     '#options' => array(
       'select' => t('Select list'),
       'select_other' => t("Select list (with 'other' option)"),
       'radio_other' => t("Radio options (with 'other' option)"),
-      'custom' => t('Text field (custom amount)')
+      'custom' => t('Text field (custom amount)'),
     ),
     '#description' => t('Select the type of amount widget.'),
   );
@@ -138,9 +134,7 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
   $form['settings']['donation_amounts'] = array(
     '#type' => 'textarea',
     '#title' => t('Donation amounts'),
-    '#default_value' => isset($settings['settings']['donation_settings']['donation_amounts']) ?
-        redhen_allowed_amounts_string($settings['settings']['donation_settings']['donation_amounts']) :
-        '',
+    '#default_value' => isset($settings['settings']['donation_settings']['donation_amounts']) ? redhen_allowed_amounts_string($settings['settings']['donation_settings']['donation_amounts']) : '',
     '#states' => array(
       'invisible' => array(
         ':input[name="settings[donation_entry]"]' => array(
@@ -154,9 +148,7 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
   $form['settings']['minimum_donation'] = array(
     '#type' => 'textfield',
     '#title' => t('Minimum donation'),
-    '#default_value' => isset($settings['settings']['donation_settings']['minimum_donation']) ?
-        $settings['settings']['donation_settings']['minimum_donation'] :
-        '',
+    '#default_value' => isset($settings['settings']['donation_settings']['minimum_donation']) ? $settings['settings']['donation_settings']['minimum_donation'] : '',
     '#description' => t('Enter the minimum allowed donation as an integer. Leave blank for no minimum.'),
     '#states' => array(
       'invisible' => array(
@@ -170,9 +162,7 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
   $form['settings']['maximum_donation'] = array(
     '#type' => 'textfield',
     '#title' => t('Maximum donation'),
-    '#default_value' => isset($settings['settings']['donation_settings']['maximum_donation']) ?
-        $settings['settings']['donation_settings']['maximum_donation'] :
-        '',
+    '#default_value' => isset($settings['settings']['donation_settings']['maximum_donation']) ? $settings['settings']['donation_settings']['maximum_donation'] : '',
     '#description' => t('Enter the maximum allowed donation as an integer. Leave blank for no maximum.'),
     '#states' => array(
       'invisible' => array(
@@ -190,6 +180,7 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
   $fields = field_info_instances('redhen_contact', $donation_type->settings['contact_settings']['contact_type']);
 
   $other_fields = array();
+  $address_fields = NULL;
   foreach ($fields as $field_name => $field) {
     $field_info = field_info_field($field_name);
     if ($field_info['type'] == 'addressfield') {
@@ -199,7 +190,6 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
       if ($field_info['type'] != 'redhen_email') {
         $other_fields[$field_name] = $field['label'];
       }
-
     }
   }
 
@@ -217,9 +207,7 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
   $form['redhen_field_selector']['fields'] = array(
     '#type' => 'checkboxes',
     '#options' => $other_fields,
-    '#default_value' => isset($settings['settings']['redhen_fields']['fields']) ?
-        $settings['settings']['redhen_fields']['fields'] :
-        array(),
+    '#default_value' => isset($settings['settings']['redhen_fields']['fields']) ? $settings['settings']['redhen_fields']['fields'] : array(),
     // Adding break for readability.
     '#prefix' => '<br/>',
   );
@@ -233,10 +221,7 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
   );
 
   // Product options.
-  $product_options = array(
-    '' => t('None'),
-  );
-
+  $product_options = array('' => t('None'));
   $rec_product_options = array();
 
   $query = new EntityFieldQuery();
@@ -252,12 +237,12 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
     );
   $result = $query->execute();
   $products = commerce_product_load_multiple(array_keys($result['commerce_product']));
+  $rec_product_description = array();
   foreach ($products as $id => $product) {
     if ($product->type == 'recurring') {
       $product_wrapper = entity_metadata_wrapper('commerce_product', $product);
       $rec_product_options[$id] = $product->title;
-      $rec_product_description[$id]
-        = redhen_donation_product_description($product_wrapper);
+      $rec_product_description[$id] = redhen_donation_product_description($product_wrapper);
     }
     else {
       $product_options[$id] = $product->title;
@@ -299,8 +284,8 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
   }
   else {
     $form['commerce']['product_options']['recurring'] = array(
-     '#type' => 'hidden',
-     '#value' => array(),
+      '#type' => 'hidden',
+      '#value' => array(),
     );
   }
 
@@ -392,16 +377,12 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
       $row['payment_method'] = array(
         '#type' => 'select',
         '#options' => $payment_options,
-        '#default_value' => isset($form_state['methods'][$delta]['payment_method']) ?
-            $form_state['methods'][$delta]['payment_method'] :
-            0,
+        '#default_value' => isset($form_state['methods'][$delta]['payment_method']) ? $form_state['methods'][$delta]['payment_method'] : 0,
       );
       $row['label'] = array(
         '#type' => 'textfield',
         '#size' => 20,
-        '#default_value' => isset($form_state['methods'][$delta]['label']) ?
-            $form_state['methods'][$delta]['label'] :
-            '',
+        '#default_value' => isset($form_state['methods'][$delta]['label']) ? $form_state['methods'][$delta]['label'] : '',
       );
       $currency_options = array();
       $currencies = commerce_currencies(TRUE);
@@ -412,9 +393,7 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
       $row['currency'] = array(
         '#type' => 'select',
         '#options' => $currency_options,
-        '#default_value' => isset($form_state['methods'][$delta]['currency']) ?
-            $form_state['methods'][$delta]['currency'] :
-            0,
+        '#default_value' => isset($form_state['methods'][$delta]['currency']) ? $form_state['methods'][$delta]['currency'] : 0,
       );
       $row['delete'] = array(
         '#id' => 'edit-delete-' . $delta,
