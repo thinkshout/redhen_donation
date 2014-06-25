@@ -576,36 +576,35 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation) {
   }
   $contact_wrapper = entity_metadata_wrapper('redhen_contact', $contact_object);
 
-    module_load_include('inc', 'redhen_contact', 'includes/redhen_contact.forms');
+  module_load_include('inc', 'redhen_contact', 'includes/redhen_contact.forms');
 
-    // Get contact type form.
-    $form['redhen_contact'] = array(
-      '#type' => 'fieldset',
-      '#title' => t('Contact Information'),
-      'form' => redhen_contact_contact_form(array(), $form_state, $contact_object),
-    );
+  // Get contact type form.
+  $form['redhen_contact'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Contact Information'),
+    'form' => redhen_contact_contact_form(array(), $form_state, $contact_object),
+  );
 
-    // Unset the contact forms action, we will use the registration form.
-    unset($form['redhen_contact']['form']['actions']);
-    // Hide all fields by default.
-    $form_fields = element_children($form['redhen_contact']['form']);
-    foreach ($form_fields as $form_field) {
-      if (strpos($form_field, 'field_') !== FALSE || $form_field == 'redhen_contact_email') {
-        $form['redhen_contact']['form'][$form_field]['#access'] = FALSE;
-      }
+  // Unset the contact forms action, we will use the registration form.
+  unset($form['redhen_contact']['form']['actions']);
+  // Hide all fields by default.
+  $form_fields = element_children($form['redhen_contact']['form']);
+  foreach ($form_fields as $form_field) {
+    if (strpos($form_field, 'field_') !== FALSE || $form_field == 'redhen_contact_email') {
+      $form['redhen_contact']['form'][$form_field]['#access'] = FALSE;
     }
+  }
 
-    // Remove fields as defined in settings.
-    $fields = field_info_instances('redhen_contact', $contact_type);
-    foreach ($fields as $field) {
-      $field_info = field_info_field($field['field_name']);
-      // Check for field settings.
-      $field_setting = isset($settings['settings']['redhen_fields']['fields'][$field_info['field_name']])
-        ? $settings['settings']['redhen_fields']['fields'][$field_info['field_name']]
-        : NULL;
-      if ($field_info['type'] != 'addressfield' && $field_setting) {
-        $form['redhen_contact']['form'][$field_info['field_name']]['#access'] = TRUE;
-      }
+  // Remove fields as defined in settings.
+  $fields = field_info_instances('redhen_contact', $contact_type);
+  foreach ($fields as $field) {
+    $field_info = field_info_field($field['field_name']);
+    // Check for field settings.
+    $field_setting = isset($settings['settings']['redhen_fields']['fields'][$field_info['field_name']])
+      ? $settings['settings']['redhen_fields']['fields'][$field_info['field_name']]
+      : NULL;
+    if ($field_info['type'] != 'addressfield' && $field_setting) {
+      $form['redhen_contact']['form'][$field_info['field_name']]['#access'] = TRUE;
     }
 
     $middle_name = ($settings['settings']['redhen_fields']['fields']['middle_name'] === 'middle_name');
@@ -704,8 +703,7 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation) {
         '#other_description' => t('Please enter an amount.'),
         '#other_unknown_defaults' => 'other',
         '#other_delimiter' => ', ',
-        '#select_type' => $settings['settings']['donation_settings']['donation_entry'] ==
-          'select_other' ? 'select' : 'radios',
+        '#select_type' => $settings['settings']['donation_settings']['donation_entry'] == 'select_other' ? 'select' : 'radios',
       );
 
       break;
@@ -730,12 +728,12 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation) {
     )
   );
   if (count($products) > 1) {
+    $descriptions = array();
     $product_list = array();
     foreach ($products as $product_id => $product) {
       $product_wrapper = entity_metadata_wrapper('commerce_product', $product);
       $product_list[$product_id] = $product->title;
-      $descriptions[$product_id]
-        = redhen_donation_product_description($product_wrapper);
+      $descriptions[$product_id] = redhen_donation_product_description($product_wrapper);
     }
     $product_label = $settings['settings']['commerce']['product_options']['product_select_label'] == "" ?
       t('Donation Type') :
@@ -845,7 +843,6 @@ function redhen_donation_form_submit($form, &$form_state) {
   $donation = $form_state['donation'];
   $donation_type = redhen_donation_type_load($donation->bundle());
   $message = '';
-  // TODO: Break out into callbacks?
 
   // Contact and User handling.
   $contact = $form_state['redhen_contact'];
@@ -867,6 +864,7 @@ function redhen_donation_form_submit($form, &$form_state) {
     $contact->first_name = $form_state['values']['first_name'];
     $contact->middle_name = $form_state['values']['middle_name'];
     $contact->last_name = $form_state['values']['last_name'];
+
     // Only update if new.
     $contact->author_uid = $new_contact ? $contact->author_uid : $user->uid;
 
@@ -887,8 +885,7 @@ function redhen_donation_form_submit($form, &$form_state) {
 
     $message .= ' ' . t('The contact was updated with the information provided.');
     watchdog('redhen_donation', 'RedHen Contact %contact_id has been updated..',
-      array('%contact_id' => $contact->contact_id),
-      WATCHDOG_NOTICE
+      array('%contact_id' => $contact->contact_id), WATCHDOG_NOTICE
     );
     redhen_contact_save($contact);
   }
@@ -955,7 +952,6 @@ function redhen_donation_form_submit($form, &$form_state) {
   }
 
   $payment_methods = $settings['settings']['commerce']['payment_options']['payment_methods'];
-  // TODO: This should be filter?
   foreach ($payment_methods as $payment_method) {
     if ($payment_method['payment_method'] == $form_state['values']['payment_method']) {
       $currency = $payment_method['currency'];
@@ -1031,17 +1027,15 @@ function redhen_donation_form_submit($form, &$form_state) {
   $donation->pledged = $pledged;
   $donation->received = $received;
 
-  if ($order) {
-    $order_id = $order_wrapper->order_id->value();
-    if ($recurring_product) {
-      $donation->transaction_entity_type = 'commerce_recurring';
-      $recurring_entity = current(commerce_recurring_load_by_order($order));
-      $donation->transaction_entity_id = $recurring_entity->id;
-    }
-    else {
-      $donation->transaction_entity_type = 'commerce_order';
-      $donation->transaction_entity_id = $order_id;
-    }
+  $order_id = $order_wrapper->order_id->value();
+  if ($recurring_product) {
+    $donation->transaction_entity_type = 'commerce_recurring';
+    $recurring_entity = current(commerce_recurring_load_by_order($order));
+    $donation->transaction_entity_id = $recurring_entity->id;
+  }
+  else {
+    $donation->transaction_entity_type = 'commerce_order';
+    $donation->transaction_entity_id = $order_id;
   }
 
   // Notify field widgets.
@@ -1063,8 +1057,7 @@ function redhen_donation_form_submit($form, &$form_state) {
   }
   else {
     drupal_set_message(t('There was a problem submitting your donation.'));
-    watchdog('redhen_donation', 'There was a problem with submitting
-      a RedHen Donation for RedHen Contact %contact_id',
+    watchdog('redhen_donation', 'There was a problem with submitting a RedHen Donation for RedHen Contact %contact_id',
       array('%contact_id' => $contact->contact_id),
       WATCHDOG_NOTICE
     );
