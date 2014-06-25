@@ -94,11 +94,10 @@ function redhen_donation_donations_page($entity_type, $entity) {
       'specifier' => 'updated',
     ),
     array(
-      'data' => t('Status'),
-      'specifier' => 'status',
+      'data' => t('Transaction Entity'),
     ),
     array(
-      'data' => t('Recurring/Order'),
+      'data' => t('Transaction Status'),
     ),
   );
 
@@ -145,12 +144,12 @@ function redhen_donation_donations_page($entity_type, $entity) {
         $wrapper->pledged->value(),
         $wrapper->received->value(),
         format_date($donation->updated),
-        $wrapper->status->value(),
         l(
           $transaction_entity_label ?: t('Recurring') . ' ' .
            $donation->transaction_entity_id,
           $transaction_entity_uri['path']
         ),
+        $wrapper->status->value(),
       );
     }
 

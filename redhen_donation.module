@@ -871,7 +871,14 @@ function redhen_donation_property_redhen_contact_get(RedhenDonation $donation, a
  * Getter callback for donation status.
  */
 function redhen_donation_property_status_get(RedhenDonation $donation, array $options, $property_name, $entity_type) {
-  $status = $donation->status == 0 ? t('Disabled') : t('Enabled');
+  $wrapper = entity_metadata_wrapper('redhen_donation', $donation);
+  $transaction_entity = $wrapper->transaction_entity->value();
+  if ($transaction_entity->type == 'commerce_order') {
+    $status = ucfirst($transaction_entity->status);
+  }
+  else {
+    $status = $transaction_entity->status == 0 ? t('Disabled') : t('Enabled');
+  }
   return $status;
 }
 

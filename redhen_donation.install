@@ -50,12 +50,6 @@ function redhen_donation_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
-      'status' => array(
-        'description' => 'The status of this donation.',
-        'type' => 'int',
-        'not null' => TRUE,
-        'default' => 1,
-      ),
       'transaction_entity_type' => array(
         'description' => 'The entity type of the transaction (order or recurring) associated with this donation.',
         'type' => 'varchar',
@@ -275,4 +269,12 @@ function redhen_donation_field_schema($field) {
     'indexes' => $indexes,
     'foreign keys' => $foreign_keys,
   );
+}
+
+/**
+ * Drop the status column from {redhen_donation}.
+ */
+function redhen_donation_update_7001() {
+  db_drop_field('redhen_donation', 'status');
+  drupal_get_schema('redhen_donation', TRUE);
 }
