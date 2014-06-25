@@ -1141,8 +1141,7 @@ function redhen_donation_get_payment_methods(&$form_state) {
 
   // Ensure one method exists.
   $empty  = array_filter($methods);
-  $methods = empty($methods) && empty($empty) ?
-    array(array()) : $methods;
+  $methods = empty($methods) && empty($empty) ? array(array()) : $methods;
 
   return $methods;
 }
