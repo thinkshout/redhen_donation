@@ -1125,8 +1125,6 @@ function redhen_donation_get_payment_methods(&$form_state) {
     $methods = &$form_state['methods'];
   }
 
-  $value = NULL;
-
   if (empty($methods)) {
     $methods = array(redhen_donation_get_empty_field_map_row());
   }
@@ -1145,7 +1143,6 @@ function redhen_donation_get_payment_methods(&$form_state) {
   $empty  = array_filter($methods);
   $methods = empty($methods) && empty($empty) ?
     array(array()) : $methods;
-  $value = &$methods;
 
   return $methods;
 }
