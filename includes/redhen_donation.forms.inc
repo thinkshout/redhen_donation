@@ -849,25 +849,24 @@ function redhen_donation_form_submit($form, &$form_state) {
 
   // Contact and User handling.
   $contact = $form_state['redhen_contact'];
+  $new_contact = isset($contact->is_new) && $contact->is_new === TRUE;
 
   // Does a contact already exist with that email address?
-  if (is_null($contact->contact_id)) {
-    $contact_email_search = redhen_contact_load_by_mail($form_state['values']['email']);
-    $contact_email_search = $contact_email_search == FALSE ? NULL :
-      current($contact_email_search);
-    $contact = is_null($contact_email_search) ? $contact : $contact_email_search;
+  if ($new_contact) {
+    // Attempt to load contact based on given email.
+    if ($contact_email_search = redhen_contact_load_by_mail($form_state['values']['email'])) {
+      $contact = current($contact_email_search);
+    }
   }
 
   // If set to update fields, do so. Or if new contact create contact.
-  if ($donation_type->settings['contact_settings']['contact_update_fields'] == 1
-    || is_null($contact->contact_id)) {
+  if ($donation_type->settings['contact_settings']['contact_update_fields'] == 1 || $new_contact) {
     // Save default parameters back into the $contact object.
     $contact->first_name = $form_state['values']['first_name'];
     $contact->middle_name = $form_state['values']['middle_name'];
     $contact->last_name = $form_state['values']['last_name'];
     // Only update if new.
-    $contact->author_uid = is_null($contact->contact_id) ?
-      $contact->author_uid : $user->uid;
+    $contact->author_uid = $new_contact ? $contact->author_uid : $user->uid;
 
     // Notify field widgets.
     field_attach_submit('redhen_contact', $contact, $form, $form_state);
