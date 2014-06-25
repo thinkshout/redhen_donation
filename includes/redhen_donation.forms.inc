@@ -570,15 +570,10 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation) {
   $donation_type = redhen_donation_type_load($donation->bundle());
   $contact_type = $donation_type->settings['contact_settings']['contact_type'];
 
-  // If a Contact type was found.
-  if ($contact_type) {
-    $contact_object = redhen_contact_load_by_user($user);
-    if (!$contact_object) {
-      $contact_object = redhen_contact_create(array('type' => $contact_type));
-    }
-    else {
-      $form_state['existing_contact'] = TRUE;
-    }
+  $contact_object = redhen_contact_load_by_user($user);
+  if (!$contact_object) {
+    $contact_object = redhen_contact_create(array('type' => $contact_type));
+  }
 
     module_load_include('inc', 'redhen_contact', 'includes/redhen_contact.forms');
 
