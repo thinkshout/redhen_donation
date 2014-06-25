@@ -859,6 +859,8 @@ function redhen_donation_form_submit($form, &$form_state) {
     }
   }
 
+  $contact_wrapper = entity_metadata_wrapper('redhen_contact', $contact);
+
   // If set to update fields, do so. Or if new contact create contact.
   if ($donation_type->settings['contact_settings']['contact_update_fields'] == 1 || $new_contact) {
     // Save default parameters back into the $contact object.
@@ -874,17 +876,15 @@ function redhen_donation_form_submit($form, &$form_state) {
     // Set Address field if needed.
     if ($settings['settings']['commerce']['profile_selector'] != 'billing') {
       $sync_field = $settings['settings']['commerce']['profile_selector'];
-      $contact_address = empty($contact->{$sync_field}[LANGUAGE_NONE]) ?
-        array() :
-        $contact->{$sync_field}[LANGUAGE_NONE][0];
-      $contact_address = empty($contact_address) ? array() : $contact_address;
+      $contact_address = empty($contact_wrapper->{$sync_field}) ? array() : $contact_wrapper->{$sync_field}->value();
       $billing_address = $form_state['values']['commerce_customer_address'][LANGUAGE_NONE][0];
       $updated_address = array_merge($contact_address, $billing_address);
-      $contact->{$sync_field}[LANGUAGE_NONE][0] = $updated_address;
+      $contact_wrapper->{$sync_field}->set($updated_address);
     }
 
     // Set email address.
-    redhen_contact_property_email_set($contact, NULL, $form_state['values']['email']);
+    $contact_wrapper->email->set($form_state['values']['email']);
+
     $message .= ' ' . t('The contact was updated with the information provided.');
     watchdog('redhen_donation', 'RedHen Contact %contact_id has been updated..',
       array('%contact_id' => $contact->contact_id),
