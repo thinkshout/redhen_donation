@@ -574,6 +574,7 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation) {
   if (!$contact_object) {
     $contact_object = redhen_contact_create(array('type' => $contact_type));
   }
+  $contact_wrapper = entity_metadata_wrapper('redhen_contact', $contact_object);
 
     module_load_include('inc', 'redhen_contact', 'includes/redhen_contact.forms');
 
@@ -617,10 +618,7 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation) {
     '#type' => 'textfield',
     '#title' => t('Email'),
     '#required' => TRUE,
-    '#default_value' => redhen_contact_property_email_get(
-      $contact_object, array(), NULL, NULL
-    ),
-
+    '#default_value' => $contact_wrapper->email->value(),
   );
 
   field_attach_form('redhen_donation', $donation, $form, $form_state);
