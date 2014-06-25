@@ -1148,7 +1148,7 @@ function redhen_donation_get_payment_methods(&$form_state) {
 }
 
 /**
- * Helper to rapidly retreive an empty field mapping array.
+ * Helper to rapidly retrieve an empty field mapping array.
  *
  * @return array
  *   An empty field mapping array.
