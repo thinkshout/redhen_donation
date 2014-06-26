@@ -114,8 +114,7 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
     '#type' => 'textfield',
     '#title' => t('Confirmation page'),
     '#default_value' => isset($settings['settings']['donation_settings']['confirmation_page']) ? $settings['settings']['donation_settings']['confirmation_page'] : '',
-    '#description' => t('Set the URL of the confirmation page. If not set,
-    the form will redirect to itself with a "Thank you" message.'),
+    '#description' => t('Set the URL of the confirmation page. If not set, the form will redirect to itself with a "Thank you" message.'),
   );
 
   $form['settings']['donation_entry'] = array(
@@ -128,7 +127,7 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
       'radio_other' => t("Radio options (with 'other' option)"),
       'custom' => t('Text field (custom amount)'),
     ),
-    '#description' => t('Select the type of amount widget.'),
+    '#description' => t('Select the type of options widget to use for donation amount.'),
   );
 
   $form['settings']['donation_amounts'] = array(
@@ -197,9 +196,7 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
     '#type' => 'fieldset',
     '#title' => t('RedHen Field Selector'),
     '#collapsible' => TRUE,
-    '#description' => t('Select the fields to display on the donation form contact information.
-      If a contact already exists and is of a different type that does not have the field selected,
-      that field will not be available.'),
+    '#description' => t('Select the contact fields to display on the donation form. If an existing contact linked to an authenticated user is loaded, and is of a different type, than some fields may be unavailable.'),
     '#collapsed' => FALSE,
     '#tree' => TRUE,
   );
@@ -257,8 +254,7 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
     '#type' => 'textfield',
     '#title' => t('Product selection label'),
     '#default_value' => $settings['settings']['commerce']['product_options']['product_select_label'],
-    '#description' => t('The label to be show above product selections.
-      Defaults to "Donation Type"'),
+    '#description' => t('The label to show above the product selections. Defaults to "Donation Type".'),
   );
 
   $form['commerce']['product_options']['one_time_product'] = array(
@@ -298,8 +294,7 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
       '#options' => $address_fields,
       '#default_value' => $settings['settings']['commerce']['profile_selector'],
       '#description' => t(
-        'Select a contact field to sync with the billing
-        profile. If "none" is selected, no Contact address fields will be updated.'
+        'Select a contact address field to sync with the billing profile. If "none" is selected, no Contact address fields will be updated with the information provided.'
       ),
     );
   }
@@ -345,9 +340,7 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
       '#collapsed' => FALSE,
       '#tree' => TRUE,
       '#id' => 'edit-redhen-donation-payment-options-wrapper',
-      '#description' => t('Select the payment methods that will be available on
-        the form. If a recurring product is used, ensure that methods that
-        support Commerce Recurring.'),
+      '#description' => t('Select the available payment methods. If a recurring product is used, ensure the method supports the Commerce Recurring framework.'),
     );
 
     $form['commerce']['payment_options']['payment_methods'] = array(
