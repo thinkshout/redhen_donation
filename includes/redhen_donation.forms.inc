@@ -1116,11 +1116,11 @@ function redhen_donation_get_payment_methods(&$form_state) {
   }
 
   if (empty($methods)) {
-    $methods = array(redhen_donation_get_empty_field_map_row());
+    $methods = array(array());
   }
   if (isset($form_state['triggering_element'])) {
     if ($form_state['triggering_element']['#name'] == 'donation_add_field') {
-      $methods[] = redhen_donation_get_empty_field_map_row();
+      $methods[] = array();
     }
     if (isset($form_state['triggering_element']['#ajax']['delta']) &&
       $form_state['triggering_element']['#name'] == 'delete_method-' . $form_state['triggering_element']['#ajax']['delta']) {
@@ -1134,16 +1134,6 @@ function redhen_donation_get_payment_methods(&$form_state) {
   $methods = empty($methods) && empty($empty) ? array(array()) : $methods;
 
   return $methods;
-}
-
-/**
- * Helper to rapidly retrieve an empty field mapping array.
- *
- * @return array
- *   An empty field mapping array.
- */
-function redhen_donation_get_empty_field_map_row() {
-  return array();
 }
 
 /**
