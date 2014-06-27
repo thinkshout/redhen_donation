@@ -945,7 +945,7 @@ function redhen_donation_form_submit($form, &$form_state) {
   foreach ($payment_methods as $payment_method) {
     if ($payment_method['payment_method'] == $form_state['values']['payment_method']) {
       $currency = $payment_method['currency'];
-      continue;
+      break;
     }
   }
 
