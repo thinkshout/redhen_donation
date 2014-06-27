@@ -835,7 +835,6 @@ function redhen_donation_form_submit($form, &$form_state) {
   $values = $form_state['values'];
   $donation = $form_state['donation'];
   $donation_type = redhen_donation_type_load($donation->bundle());
-  $message = '';
 
   // Contact and User handling.
   $contact = $form_state['redhen_contact'];
@@ -876,8 +875,7 @@ function redhen_donation_form_submit($form, &$form_state) {
     // Set email address.
     $contact_wrapper->email->set($form_state['values']['email']);
 
-    $message .= ' ' . t('The contact was updated with the information provided.');
-    watchdog('redhen_donation', 'RedHen Contact %contact_id has been updated..',
+    watchdog('redhen_donation', 'RedHen Contact %contact_id has been updated.',
       array('%contact_id' => $contact->contact_id), WATCHDOG_NOTICE
     );
     redhen_contact_save($contact);
@@ -913,10 +911,9 @@ function redhen_donation_form_submit($form, &$form_state) {
     }
     $contact->uid = $donation_user->uid;
     redhen_contact_save($contact);
-    $message .= t('User has been linked to the contact %name.',
-      array(
-        '%name' => $contact->label(),
-      )
+    $contact_wrapper->user->set($donation_user);
+    watchdog('redhen_donation', 'User has been linked to the contact %name.',
+      array('%name' => $contact->label()), WATCHDOG_NOTICE
     );
   }
 
