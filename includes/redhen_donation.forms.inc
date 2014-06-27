@@ -878,7 +878,6 @@ function redhen_donation_form_submit($form, &$form_state) {
     watchdog('redhen_donation', 'RedHen Contact %contact_id has been updated.',
       array('%contact_id' => $contact->contact_id), WATCHDOG_NOTICE
     );
-    redhen_contact_save($contact);
   }
 
   // Load product.
@@ -894,7 +893,7 @@ function redhen_donation_form_submit($form, &$form_state) {
   else {
     $donation_user = $user;
   }
-  if ($recurring_product && $contact->uid == NULL) {
+  if ($recurring_product && $contact_wrapper->user->value() == NULL) {
     if (!$donation_user) {
       $password = user_password();
       $fields = array(
@@ -909,13 +908,14 @@ function redhen_donation_form_submit($form, &$form_state) {
       );
       $donation_user = user_save('', $fields);
     }
-    $contact->uid = $donation_user->uid;
-    redhen_contact_save($contact);
     $contact_wrapper->user->set($donation_user);
     watchdog('redhen_donation', 'User has been linked to the contact %name.',
       array('%name' => $contact->label()), WATCHDOG_NOTICE
     );
   }
+
+  // Save the contact.
+  redhen_contact_save($contact);
 
   // Commerce handling.
   $order_type
