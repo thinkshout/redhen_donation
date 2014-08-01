@@ -115,12 +115,14 @@ class RedhenDonationMetadataController extends EntityDefaultMetadataController {
     );
 
     $properties['transaction_entity'] = array(
+      'label' => t("Transaction Entity"),
       'type' => 'entity',
-      'getter callback' => 'redhen_donation_property_transation_entity_get',
+      'getter callback' => 'redhen_donation_property_transaction_entity_get',
       'description' => t("The order or recurring entity associated with this donation."),
     );
 
     $properties['contact'] = array(
+      'label' => t("RedHen Contact"),
       'type' => 'redhen_contact',
       'schema field' => 'contact_id',
       'getter callback' => 'redhen_donation_property_redhen_contact_get',
