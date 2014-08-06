@@ -328,7 +328,7 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
       '#tree' => TRUE,
       '#id' => 'edit-redhen-donation-payment-options-wrapper',
       '#description' => t('Please configure and/or enable a valid !link.',
-        array('!link' => l(t('payment method'), '/admin/commerce/config/payment-methods'))
+        array('!link' => l(t('payment method'), 'admin/commerce/config/payment-methods'))
       ),
     );
   }
@@ -489,7 +489,7 @@ function redhen_donation_entity_settings_form_validate($form, &$form_state) {
   $one_time_product = $form_state['values']['commerce']['product_options']['one_time_product'];
   $recurring_products = array_filter($form_state['values']['commerce']['product_options']['recurring']);
   if ($one_time_product == '' && empty($recurring_products)) {
-    form_set_error('form', t('Must select at lest one product.'));
+    form_set_error('form', t('Must select at least one product.'));
   }
 
   // Validate open date:
