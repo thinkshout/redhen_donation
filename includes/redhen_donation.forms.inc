@@ -754,12 +754,12 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation) {
       '#markup' => redhen_donation_product_description($product_wrapper),
     );
   }
-
-  $billing_address_field = $settings['settings']['commerce']['profile_selector'];
+  
   $billing_user = !is_null($contact_object->uid) ? $contact_object->uid : $user->uid;
   $billing = commerce_customer_profile_new('billing', $billing_user);
   // Set default contact address.
-  if (!(is_null($contact_object->contact_id))) {
+  if (!(is_null($contact_object->contact_id)) && isset($settings['settings']['commerce']['profile_selector'])) {
+    $billing_address_field = $settings['settings']['commerce']['profile_selector'];
     $billing->commerce_customer_address = $contact_object->{$billing_address_field};
   }
 
