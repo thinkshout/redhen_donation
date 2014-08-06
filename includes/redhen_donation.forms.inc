@@ -233,16 +233,22 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
       'IN'
     );
   $result = $query->execute();
-  $products = commerce_product_load_multiple(array_keys($result['commerce_product']));
-  $rec_product_description = array();
-  foreach ($products as $id => $product) {
-    if ($product->type == 'recurring') {
-      $product_wrapper = entity_metadata_wrapper('commerce_product', $product);
-      $rec_product_options[$id] = $product->title;
-      $rec_product_description[$id] = redhen_donation_product_description($product_wrapper);
-    }
-    else {
-      $product_options[$id] = $product->title;
+  if (!isset($result['commerce_product'])) {
+    $product_options = array('' => 'No products found');
+  }
+  else {
+    $products = commerce_product_load_multiple(array_keys($result['commerce_product']));
+
+    $rec_product_description = array();
+    foreach ($products as $id => $product) {
+      if ($product->type == 'recurring') {
+        $product_wrapper = entity_metadata_wrapper('commerce_product', $product);
+        $rec_product_options[$id] = $product->title;
+        $rec_product_description[$id] = redhen_donation_product_description($product_wrapper);
+      }
+      else {
+        $product_options[$id] = $product->title;
+      }
     }
   }
   $form['commerce']['product_options'] = array(
