@@ -172,6 +172,20 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
     ),
   );
 
+  $form['settings']['submit_label'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Submit button'),
+    '#default_value' => isset($settings['settings']['donation_settings']['submit_label']) ? $settings['settings']['donation_settings']['submit_label'] : 'Donate',
+    '#description' => t('The text on the form submission button.'),
+    '#states' => array(
+      'invisible' => array(
+        ':input[name="settings[donation_entry]"]' => array(
+          'value' => 'select',
+        ),
+      ),
+    ),
+  );
+
   // Allow other modules to add their own custom settings:
   $form['settings'] += module_invoke_all('redhen_donation_entity_settings', $settings);
 
@@ -624,7 +638,7 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation) {
   $form['actions'] = array('#type' => 'actions');
   $form['actions']['submit'] = array(
     '#type' => 'submit',
-    '#value' => t('Save Donation'),
+    '#value' => isset($settings['settings']['donation_settings']['submit_label']) ? $settings['settings']['donation_settings']['submit_label'] : t('Donate'),
   );
 
   $payment_methods = array();
