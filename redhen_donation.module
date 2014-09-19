@@ -192,10 +192,20 @@ function redhen_donation_menu() {
     $type = $instance['entity_type'];
     if (!in_array($type, array('redhen_donation', 'redhen_donation_type'))) {
       $info = entity_get_info($type);
-      $bundle_key = $info['bundle keys']['bundle'];
+      $bundle_key = $info['entity keys']['bundle'];
       $entity = entity_create($type, array($bundle_key => $instance['bundle']));
       $uri = entity_uri($type, $entity);
       $path = $uri['path'];
+      $items[$path . '%entity_object/donate'] = array(
+        'load arguments' => array($type),
+        'title' => 'Donate',
+        'page callback' => 'redhen_donation_donate_page',
+        'page arguments' => array(0, 1),
+        'access callback' => 'redhen_donation_donate_page_access',
+        'access arguments' => array(0, 1),
+        'type' => MENU_LOCAL_TASK,
+        'file' => 'includes/redhen_donation.pages.inc',
+      );
       $items[$path . '%entity_object/donations'] = array(
         'load arguments' => array($type),
         'title' => 'Manage Donations',
