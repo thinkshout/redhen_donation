@@ -114,7 +114,14 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
     '#type' => 'textfield',
     '#title' => t('Confirmation page'),
     '#default_value' => isset($settings['settings']['donation_settings']['confirmation_page']) ? $settings['settings']['donation_settings']['confirmation_page'] : '',
-    '#description' => t('Set the URL of the confirmation page. If not set, the form will redirect to itself with a "Thank you" message.'),
+    '#description' => t('Set the URL of the confirmation page. If not set, the form will redirect to itself.'),
+  );
+
+  $form['settings']['confirmation_message'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Confirmation message'),
+    '#default_value' => isset($settings['settings']['donation_settings']['confirmation_message']) ? $settings['settings']['donation_settings']['confirmation_message'] : 'Thank you for your donation!',
+    '#description' => t('Set the message to appear after a successful donation. Leave blank to display no message.'),
   );
 
   $form['settings']['donation_entry'] = array(
@@ -1057,11 +1064,11 @@ function redhen_donation_form_submit($form, &$form_state) {
       array('%donation_id' => $donation->donation_id),
       WATCHDOG_NOTICE
     );
-
-    if ($settings['settings']['donation_settings']['confirmation_page'] == '') {
-      drupal_set_message(t('Thank you for your donation.'));
+    if (!empty($settings['settings']['donation_settings']['confirmation_message'])) {
+      $message = $settings['settings']['donation_settings']['confirmation_message'];
+      drupal_set_message($message);
     }
-    else {
+    if (!empty($settings['settings']['donation_settings']['confirmation_page'])) {
       drupal_goto($settings['settings']['donation_settings']['confirmation_page']);
     }
   }
