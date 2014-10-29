@@ -35,10 +35,6 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
     );
   }
 
-  if (!isset($form_state['methods'])) {
-    $form_state['methods'] = $settings['settings']['commerce']['payment_options']['payment_methods'] ?: array();
-  }
-
   // Check to see if date_popup is installed so we can provide a friendlier UI.
   $date_popup_installed = FALSE;
   if (module_exists('date_popup')) {
