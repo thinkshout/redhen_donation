@@ -441,8 +441,12 @@ function redhen_donation_type_form_validate($form, &$form_state) {
     form_set_error('form', t('Must select at least one product.'));
   }
 
+  // Flatten payment methods and validate.
+  $form_state['values']['settings']['commerce_settings']['payment_methods'] = array_filter($form_state['values']['settings']['commerce_settings']['payment_options']['payment_methods']);
+  unset($form_state['values']['settings']['commerce_settings']['payment_options']);
+
   // Validate payment methods:
-  if (!isset($form_state['values']['settings']['commerce_settings']['payment_options']['payment_methods'])) {
+  if (empty($form_state['values']['settings']['commerce_settings']['payment_methods'])) {
     form_set_error('settings[commerce_settings][payment_options][payment_methods]', t('Must select at least one payment method.'));
   }
 }
