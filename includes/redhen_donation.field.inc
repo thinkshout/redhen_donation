@@ -67,13 +67,10 @@ function redhen_donation_field_instance_settings_form($field, $instance) {
 
   $settings_form = redhen_donation_entity_settings_form($form['default_redhen_donation_settings'], $form_state, $default_settings);
 
-  if (!isset($form_state['values']['contact_type'])) {
-    unset($settings_form['redhen_field_selector']);
-  }
-
   // Unset the save button just in case.
   unset($settings_form['save']);
-//  $form['default_redhen_donation_settings'] += $settings_form;
+
+  $form['default_redhen_donation_settings'] += $settings_form;
 
   // @todo: validation
   return $form;
