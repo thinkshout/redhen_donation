@@ -431,6 +431,23 @@ function redhen_donation_type_form_callback($form, $form_state) {
 }
 
 /**
+ * Validation callback for redhen_donation_type_form().
+ */
+function redhen_donation_type_form_validate($form, &$form_state) {
+  // Must select at least one product.
+  $one_time_product = $form_state['values']['settings']['commerce_settings']['product_options']['one_time_product'];
+  $recurring_products = array_filter($form_state['values']['settings']['commerce_settings']['product_options']['recurring']);
+  if ($one_time_product == '' && empty($recurring_products)) {
+    form_set_error('form', t('Must select at least one product.'));
+  }
+
+  // Validate payment methods:
+  if (!isset($form_state['values']['settings']['commerce_settings']['payment_options']['payment_methods'])) {
+    form_set_error('settings[commerce_settings][payment_options][payment_methods]', t('Must select at least one payment method.'));
+  }
+}
+
+/**
  * Form API submit callback for the type form.
  */
 function redhen_donation_type_form_submit(&$form, &$form_state) {
