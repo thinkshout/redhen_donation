@@ -208,12 +208,13 @@ function redhen_donation_menu() {
       );
       $items[$path . '%entity_object/donations'] = array(
         'load arguments' => array($type),
-        'title' => 'Manage Donations',
+        'title' => 'Donations',
         'page callback' => 'redhen_donation_donations_page',
         'page arguments' => array(0, 1),
         'access callback' => 'redhen_donation_administer_donations_access',
         'access arguments' => array(0, 1),
         'type' => MENU_LOCAL_TASK,
+        'weight' => 1,
         'file' => 'includes/redhen_donation.pages.inc',
       );
       $items[$path . '%entity_object/donations/list'] = array(
