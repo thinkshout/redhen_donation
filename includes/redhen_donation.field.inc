@@ -32,6 +32,54 @@ function redhen_donation_field_info() {
 }
 
 /**
+ * Implements hook_field_instance_settings_form().
+ *
+ * Add default donation field instance settings.
+ */
+function redhen_donation_field_instance_settings_form($field, $instance) {
+  $form = $form_state = array();
+
+  $default_settings = isset($instance['settings']['default_redhen_donation_settings']) ? $instance['settings']['default_redhen_donation_settings'] : array();
+
+  // Flatten scheduling and reminder settings since this form is in tree mode.
+  foreach ($default_settings as $key => $val) {
+    if ($key != 'settings' and is_array($val)) {
+      foreach ($val as $key1 => $val1) {
+        if (is_array($val1)) {
+          foreach ($val1 as $key2 => $val2) {
+            $default_settings[$key2] = $val2;
+          }
+        }
+        else {
+          $default_settings[$key1] = $val1;
+        }
+      }
+      unset($default_settings[$key]);
+    }
+  }
+
+  $form['default_redhen_donation_settings'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Default Donation settings'),
+    '#collapsible' => TRUE,
+    '#description' => t("These settings will be applied when an entity with this field is saved and does not yet have it's own settings applied."),
+  );
+
+  $settings_form = redhen_donation_entity_settings_form($form['default_redhen_donation_settings'], $form_state, $default_settings);
+
+  if (!isset($form_state['values']['contact_type'])) {
+    unset($settings_form['redhen_field_selector']);
+  }
+
+  // Unset the save button just in case.
+  unset($settings_form['save']);
+//  $form['default_redhen_donation_settings'] += $settings_form;
+
+  // @todo: validation
+  return $form;
+}
+
+/**
  * Implements hook_field_is_empty().
  */
 function redhen_donation_field_is_empty($item, $field) {
