@@ -1069,11 +1069,11 @@ function redhen_donation_form_submit($form, &$form_state) {
       drupal_set_message($message);
     }
     if (!empty($settings['settings']['donation_settings']['confirmation_page'])) {
-      drupal_goto($settings['settings']['donation_settings']['confirmation_page']);
+      $form_state['redirect'] = array($settings['settings']['donation_settings']['confirmation_page']);
     }
     else {
       $host_entity = entity_metadata_wrapper($settings['entity_type'], $settings['entity_id']);
-      drupal_goto($host_entity->url->value());
+      $form_state['redirect'] = array($host_entity->url->value());
     }
   }
   else {
