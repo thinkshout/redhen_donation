@@ -118,7 +118,7 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
   $form['settings']['donation_entry'] = array(
     '#type' => 'select',
     '#title' => t('Donation entry'),
-    '#default_value' => isset($settings['settings']['donation_settings']['donation_entry']) ? $settings['settings']['donation_settings']['donation_entry'] : '',
+    '#default_value' => isset($settings['settings']['donation_entry']) ? $settings['settings']['donation_entry'] : '',
     '#options' => array(
       'select' => t('Select list'),
       'select_other' => t("Select list (with 'other' option)"),
@@ -131,7 +131,7 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
   $form['settings']['donation_amounts'] = array(
     '#type' => 'textarea',
     '#title' => t('Donation amounts'),
-    '#default_value' => isset($settings['settings']['donation_settings']['donation_amounts']) ? redhen_allowed_amounts_string($settings['settings']['donation_settings']['donation_amounts']) : '',
+    '#default_value' => isset($settings['settings']['donation_amounts']) ? redhen_allowed_amounts_string($settings['settings']['donation_amounts']) : '',
     '#states' => array(
       'invisible' => array(
         ':input[name="settings[donation_entry]"]' => array(
@@ -145,7 +145,7 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
   $form['settings']['minimum_donation'] = array(
     '#type' => 'textfield',
     '#title' => t('Minimum donation'),
-    '#default_value' => isset($settings['settings']['donation_settings']['minimum_donation']) ? $settings['settings']['donation_settings']['minimum_donation'] : '',
+    '#default_value' => isset($settings['settings']['minimum_donation']) ? $settings['settings']['minimum_donation'] : '',
     '#description' => t('Enter the minimum allowed donation as an integer. Leave blank for no minimum.'),
     '#states' => array(
       'invisible' => array(
@@ -159,7 +159,7 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
   $form['settings']['maximum_donation'] = array(
     '#type' => 'textfield',
     '#title' => t('Maximum donation'),
-    '#default_value' => isset($settings['settings']['donation_settings']['maximum_donation']) ? $settings['settings']['donation_settings']['maximum_donation'] : '',
+    '#default_value' => isset($settings['settings']['maximum_donation']) ? $settings['settings']['maximum_donation'] : '',
     '#description' => t('Enter the maximum allowed donation as an integer. Leave blank for no maximum.'),
     '#states' => array(
       'invisible' => array(
@@ -173,7 +173,7 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
   $form['settings']['submit_label'] = array(
     '#type' => 'textfield',
     '#title' => t('Submit button'),
-    '#default_value' => isset($settings['settings']['donation_settings']['submit_label']) ? $settings['settings']['donation_settings']['submit_label'] : 'Donate',
+    '#default_value' => isset($settings['settings']['submit_label']) ? $settings['settings']['submit_label'] : 'Donate',
     '#description' => t('The text on the form submission button.'),
     '#states' => array(
       'invisible' => array(

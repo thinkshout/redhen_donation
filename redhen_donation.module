@@ -622,9 +622,7 @@ function redhen_donation_entity_set_default_settings($entity_type, $entity) {
 function redhen_donation_convert_form_settings($values) {
   $fields = array(
     'status' => $values['status'],
-    'settings' => serialize(array(
-      'donation_settings' => $values['settings'],
-    )),
+    'settings' => serialize($values['settings']),
     'open' => NULL,
     'close' => NULL,
   );
