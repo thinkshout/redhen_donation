@@ -47,6 +47,17 @@ function hook_redhen_donation_entity_settings($settings) {
 }
 
 /**
+ * Provide access to a donation after each save.
+ *
+ * Useful for calculating running totals.
+ *
+ * @param RedhenDonation $donation
+ *   Redhen Donation Object
+ */
+function hook_redhen_donation_save($donation) {
+}
+
+/**
  * Provides a way to alter access to the donation status.
  *
  * @param string $status

@@ -1092,7 +1092,11 @@ function redhen_donation_delete_multiple($donation_ids) {
  *   returns SAVED_NEW or SAVED_UPDATED, depending on the operation performed.
  */
 function redhen_donation_save(RedhenDonation $donation) {
-  return $donation->save();
+  $ret = $donation->save();
+  if ($ret) {
+    module_invoke_all('redhen_donation_save', $donation);
+  }
+  return $ret;
 }
 
 /**
