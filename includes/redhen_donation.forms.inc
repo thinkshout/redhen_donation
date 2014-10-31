@@ -781,7 +781,7 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation) {
       '#markup' => redhen_donation_product_description($product_wrapper),
     );
   }
-  
+
   $billing_user = !is_null($contact_object->uid) ? $contact_object->uid : $user->uid;
   $billing = commerce_customer_profile_new('billing', $billing_user);
   // Set default contact address.
@@ -959,13 +959,25 @@ function redhen_donation_form_submit($form, &$form_state) {
   $order_wrapper = entity_metadata_wrapper('commerce_order', $order);
 
   $line_item = commerce_product_line_item_new($product, 1, $order->order_id, array(), $line_item_type);
-  // Select or other?
-  if ($form_state['input']['donation']['other'] == '') {
-    $donation_amount = $form_state['input']['donation']['select'];
-  }
-  else {
-    $clean_amount = preg_replace("/[^0-9.]/", "", $form_state['input']['donation']['other']);
-    $donation_amount = $clean_amount * 100;
+  switch ($settings['settings']['donation_settings']['donation_entry']) {
+    case 'select':
+      $donation_amount = $form_state['input']['donation'];
+      break;
+
+    case 'select_other':
+    case 'radio_other':
+      if ($form_state['input']['donation']['other'] == '') {
+        $donation_amount = $form_state['input']['donation']['select'];
+      }
+      else {
+        $clean_amount = preg_replace("/[^0-9.]/", "", $form_state['input']['donation']['other']);
+        $donation_amount = $clean_amount * 100;
+      }
+      break;
+
+    case 'custom':
+      $clean_amount = preg_replace("/[^0-9.]/", "", $form_state['input']['donation']);
+      $donation_amount = $clean_amount * 100;
   }
 
   $payment_methods = $settings['settings']['commerce']['payment_options']['payment_methods'];
