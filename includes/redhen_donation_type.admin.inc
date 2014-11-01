@@ -118,7 +118,7 @@ function redhen_donation_type_form($form, &$form_state, $donation_type, $op = 'e
         '#type' => 'select',
         '#title' => t('Billing address'),
         '#options' => $address_fields,
-        '#default_value' => $donation_type->settings['contact_settings']['profile_selector'],
+        '#default_value' => isset($donation_type->settings['contact_settings']['profile_selector']) ? $donation_type->settings['contact_settings']['profile_selector'] : array(),
         '#description' => t(
           'Select a contact address field to sync with the billing profile. If "none" is selected, no Contact address fields will be updated with the information provided.'
         ),
@@ -222,7 +222,7 @@ function redhen_donation_type_form($form, &$form_state, $donation_type, $op = 'e
     $form['settings']['commerce_settings']['product_options']['product_select_label'] = array(
       '#type' => 'textfield',
       '#title' => t('Product selection label'),
-      '#default_value' => $donation_type->settings['commerce_settings']['product_options']['product_select_label'],
+      '#default_value' => isset($donation_type->settings['commerce_settings']['product_options']['product_select_label']) ? $donation_type->settings['commerce_settings']['product_options']['product_select_label'] : '',
       '#description' => t('The label to show above the product selections. Defaults to "Donation Type".'),
     );
 
@@ -231,7 +231,7 @@ function redhen_donation_type_form($form, &$form_state, $donation_type, $op = 'e
       '#title' => t('One Time Product'),
       '#options' => $product_options,
       '#description' => t('Choose a one time product.'),
-      '#default_value' => $donation_type->settings['commerce_settings']['product_options']['one_time_product'],
+      '#default_value' => isset($donation_type->settings['commerce_settings']['product_options']['one_time_product']) ? $donation_type->settings['commerce_settings']['product_options']['one_time_product'] : array(),
     );
 
     if (count($rec_product_options) >= 1) {

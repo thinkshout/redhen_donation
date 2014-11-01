@@ -104,7 +104,7 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
   $form['settings']['confirmation_page'] = array(
     '#type' => 'textfield',
     '#title' => t('Confirmation page'),
-    '#default_value' => isset($settings['settings']['donation_settings']['confirmation_page']) ? $settings['settings']['donation_settings']['confirmation_page'] : '',
+    '#default_value' => isset($settings['settings']['confirmation_page']) ? $settings['settings']['confirmation_page'] : '',
     '#description' => t('Set the URL of the confirmation page. If not set, the form will redirect to itself.'),
   );
 
@@ -128,10 +128,20 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
     '#description' => t('Select the type of options widget to use for donation amount.'),
   );
 
+  $donation_amounts = '';
+  if (isset($settings['settings']['donation_amounts'])) {
+    if (is_array($settings['settings']['donation_amounts'])) {
+      $donation_amounts = redhen_allowed_amounts_string($settings['settings']['donation_amounts']);
+    }
+    else {
+      $donation_amounts = $settings['settings']['donation_amounts'];
+    }
+  }
+
   $form['settings']['donation_amounts'] = array(
     '#type' => 'textarea',
     '#title' => t('Donation amounts'),
-    '#default_value' => isset($settings['settings']['donation_amounts']) ? redhen_allowed_amounts_string($settings['settings']['donation_amounts']) : '',
+    '#default_value' => $donation_amounts,
     '#states' => array(
       'invisible' => array(
         ':input[name="settings[donation_entry]"]' => array(
@@ -243,7 +253,6 @@ function redhen_donation_entity_settings_form_validate($form, &$form_state) {
  */
 function redhen_donation_entity_settings_form_submit($form, &$form_state) {
   $entity = $form_state['entity'];
-  $form_state['values']['methods'] = $form_state['methods'];
 
   $fields = redhen_donation_convert_form_settings($form_state['values']);
 
