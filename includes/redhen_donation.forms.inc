@@ -401,11 +401,11 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation) {
   }
 
   $donation_amounts = array();
-  foreach ($settings['settings']['donation_settings']['donation_amounts'] as $amount => $description) {
+  foreach ($settings['settings']['donation_amounts'] as $amount => $description) {
     $donation_amounts[$amount * 100] = $description;
   }
 
-  switch ($settings['settings']['donation_settings']['donation_entry']) {
+  switch ($settings['settings']['donation_entry']) {
     case 'select':
       $form['donation'] = array(
         '#type' => 'select',
@@ -491,8 +491,8 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation) {
   $billing_user = !is_null($contact_object->uid) ? $contact_object->uid : $user->uid;
   $billing = commerce_customer_profile_new('billing', $billing_user);
   // Set default contact address.
-  if (!(is_null($contact_object->contact_id)) && isset($settings['settings']['commerce']['profile_selector'])) {
-    $billing_address_field = $settings['settings']['commerce']['profile_selector'];
+  if (!(is_null($contact_object->contact_id)) && isset($contact_settings['profile_selector'])) {
+    $billing_address_field = $contact_settings['profile_selector'];
     $billing->commerce_customer_address = $contact_object->{$billing_address_field};
   }
 
@@ -770,12 +770,12 @@ function redhen_donation_form_submit($form, &$form_state) {
       array('%donation_id' => $donation->donation_id),
       WATCHDOG_NOTICE
     );
-    if (!empty($settings['settings']['donation_settings']['confirmation_message'])) {
-      $message = $settings['settings']['donation_settings']['confirmation_message'];
+    if (!empty($settings['settings']['confirmation_message'])) {
+      $message = $settings['settings']['confirmation_message'];
       drupal_set_message($message);
     }
-    if (!empty($settings['settings']['donation_settings']['confirmation_page'])) {
-      drupal_goto($settings['settings']['donation_settings']['confirmation_page']);
+    if (!empty($settings['settings']['confirmation_page'])) {
+      drupal_goto($settings['settings']['confirmation_page']);
     }
   }
   else {
