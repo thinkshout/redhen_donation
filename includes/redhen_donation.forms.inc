@@ -51,7 +51,7 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
     '#type' => 'fieldset',
     '#title' => t('Scheduling'),
     '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
+    '#collapsed' => FALSE,
     '#tree' => TRUE,
   );
 
