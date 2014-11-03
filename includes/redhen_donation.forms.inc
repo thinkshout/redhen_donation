@@ -665,7 +665,7 @@ function redhen_donation_form_submit($form, &$form_state) {
   $order_wrapper = entity_metadata_wrapper('commerce_order', $order);
 
   $line_item = commerce_product_line_item_new($product, 1, $order->order_id, array(), $line_item_type);
-  switch ($settings['settings']['donation_settings']['donation_entry']) {
+  switch ($settings['settings']['donation_entry']) {
     case 'select':
       $donation_amount = $form_state['input']['donation'];
       break;
