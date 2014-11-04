@@ -611,7 +611,7 @@ function redhen_donation_entity_set_default_settings($entity_type, $entity) {
 }
 
 /**
- * Helper to convert donation entity settings form values into an single array.
+ * Helper to convert donation entity settings form values into a single array.
  *
  * @param array $values
  *   Settings form values.
