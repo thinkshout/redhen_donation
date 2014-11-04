@@ -66,30 +66,32 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
     ),
     '#default_value' => !empty($settings['open']) ? $settings['open'] : '',
   );
-  if ($date_popup_installed) {
-    $form['scheduling']['open']['#type'] = 'date_popup';
-    $form['scheduling']['open']['#format'] = 'Y-m-d H:i:s O';
-    $form['scheduling']['open']['#description'] = t('When to automatically open donations. (This uses the !timezone.)', array(
-      '!timezone' => l(t('site default time zone'), 'admin/config/regional/settings')));
-    unset($form['scheduling']['open']['#maxlength']);
-  }
 
   $form['scheduling']['close'] = array(
     '#type' => 'textfield',
     '#title' => t('Close Date'),
     '#maxlength' => 25,
     '#description' => t('When to automatically close donations. Format: %time. The date format is YYYY-MM-DD and %timezone is the time zone offset from UTC. Leave blank to disable.', array(
-        '%time' => !empty($settings['close']) ? date_format(date_create($settings['close']), 'Y-m-d H:i:s O') : format_date(time(), 'custom', 'Y-m-d H:i:s O'),
+        '%time' => !empty($settings['close']) ? date_format(date_create($settings['close']), 'Y-m-d H:i') : format_date(time(), 'custom', 'Y-m-d H:i'),
         '%timezone' => !empty($settings['close']) ? date_format(date_create($settings['close']), 'O') : format_date(time(), 'custom', 'O'),
       )
     ),
     '#default_value' => !empty($settings['close']) ? $settings['close'] : '',
   );
   if ($date_popup_installed) {
+    $zonename = str_replace('_', ' ', variable_get('date_default_timezone'));
+    timezone_identifiers_list();
+    $form['scheduling']['open']['#type'] = 'date_popup';
+    $form['scheduling']['open']['#date_format'] = 'Y-m-d H:i';
+    $form['scheduling']['open']['#description'] = t('When to automatically open donations. (This uses the !timezone, which is !zone.)', array(
+      '!timezone' => l(t("site's default time zone"), 'admin/config/regional/settings'),
+      '!zone' => $zonename));
+    unset($form['scheduling']['open']['#maxlength']);
     $form['scheduling']['close']['#type'] = 'date_popup';
-    $form['scheduling']['close']['#format'] = 'Y-m-d H:i:s O';
-    $form['scheduling']['close']['#description'] = t('When to automatically close donations. (This uses the !timezone.)', array(
-      '!timezone' => l(t('site default time zone'), 'admin/config/regional/settings')));
+    $form['scheduling']['close']['#date_format'] = 'Y-m-d H:i';
+    $form['scheduling']['close']['#description'] = t('When to automatically close donations. (This uses the !timezone, which is !zone.)', array(
+      '!timezone' => l(t("site's default time zone"), 'admin/config/regional/settings'),
+      '!zone' => $zonename));
     unset($form['scheduling']['close']['#maxlength']);
   }
 
@@ -232,14 +234,19 @@ function redhen_donation_entity_settings_form_validate($form, &$form_state) {
     }
   }
 
-  // Validate open date:
-  if (!empty($form_state['values']['scheduling']['open']) && strtotime($form_state['values']['scheduling']['open']) === FALSE) {
-    form_set_error('scheduling][open', t('Date is invalid.'));
-  }
-
-  // Validate close date:
-  if (!empty($form_state['values']['scheduling']['close']) && strtotime($form_state['values']['scheduling']['close']) === FALSE) {
-    form_set_error('scheduling][close', t('Date is invalid.'));
+  // Validate dates:
+  $dates = array('open', 'close');
+  foreach ($dates as $date) {
+    if (!empty($form_state['values']['scheduling'][$date])) {
+      if ($form['scheduling'][$date]['#type'] == 'date_popup') {
+        if (empty($form_state['values']['scheduling'][$date]['time'])) {
+          form_set_error('scheduling][' . $date . '][time', t('Please select a time for "!date date" in Scheduling.', array('!date' => $date)));
+        }
+      }
+      elseif (strtotime($form_state['values']['scheduling'][$date]) === FALSE) {
+        form_set_error('scheduling][' . $date, t('Date is invalid.'));
+      }
+    }
   }
 }
 
