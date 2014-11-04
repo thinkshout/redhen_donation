@@ -286,7 +286,6 @@ function redhen_donation_entity_settings_form_submit($form, &$form_state) {
  */
 function redhen_donation_form($form, &$form_state, RedhenDonation $donation) {
   global $user;
-
   $form_state['donation'] = $donation;
 
   if (!isset($form_state['#donation_settings'])) {
@@ -746,12 +745,14 @@ function redhen_donation_form_submit($form, &$form_state) {
     $callback($payment_method, $details_form, $details_values, $order, $charge);
     $transaction = entity_load('commerce_payment_transaction', FALSE, array('order_id' => $order->order_id));
     $transaction = current($transaction);
-    if ($transaction->status == 'success') {
-      commerce_order_status_update($order, 'completed', FALSE, TRUE, t('Payment accepted successful.'));
-      commerce_line_item_save($line_item);
+    if ($transaction->status != 'success') {
+      commerce_order_status_update($order, 'canceled', FALSE, TRUE, t('Payment declined: @message'), array('@message' => $transaction->message));
+      drupal_set_message(t('There was a problem with your payment: @message', array('@message' => $transaction->message)), 'error');
+      return FALSE;
     }
     else {
-      commerce_order_status_update($order, 'canceled', FALSE, TRUE, t('Payment declined.'));
+      commerce_order_status_update($order, 'completed', FALSE, TRUE, t('Payment accepted successful.'));
+      commerce_line_item_save($line_item);
     }
   }
 
