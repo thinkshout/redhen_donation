@@ -196,13 +196,15 @@ function redhen_donation_menu() {
       $entity = entity_create($type, array($bundle_key => $instance['bundle']));
       $uri = entity_uri($type, $entity);
       $path = $uri['path'];
+      $path_parts = explode('/', $path);
+      $position = count($path_parts);
       $items[$path . '%entity_object/donate'] = array(
         'load arguments' => array($type),
         'title' => 'Donate',
         'page callback' => 'redhen_donation_donate_page',
-        'page arguments' => array(0, 1),
+        'page arguments' => array($type, $position),
         'access callback' => 'redhen_donation_donate_page_access',
-        'access arguments' => array(0, 1),
+        'access arguments' => array($type, $position),
         'type' => MENU_LOCAL_TASK,
         'file' => 'includes/redhen_donation.pages.inc',
       );
@@ -210,9 +212,9 @@ function redhen_donation_menu() {
         'load arguments' => array($type),
         'title' => 'Donations',
         'page callback' => 'redhen_donation_donations_page',
-        'page arguments' => array(0, 1),
+        'page arguments' => array($type, $position),
         'access callback' => 'redhen_donation_administer_donations_access',
-        'access arguments' => array(0, 1),
+        'access arguments' => array($type, $position),
         'type' => MENU_LOCAL_TASK,
         'weight' => 1,
         'file' => 'includes/redhen_donation.pages.inc',
@@ -221,9 +223,9 @@ function redhen_donation_menu() {
         'load arguments' => array($type),
         'title' => 'Donations',
         'page callback' => 'redhen_donation_donations_page',
-        'page arguments' => array(0, 1),
+        'page arguments' => array($type, $position),
         'access callback' => 'redhen_donation_administer_donations_access',
-        'access arguments' => array(0, 1),
+        'access arguments' => array($type, $position),
         'type' => MENU_DEFAULT_LOCAL_TASK,
         'file' => 'includes/redhen_donation.pages.inc',
       );
@@ -231,9 +233,9 @@ function redhen_donation_menu() {
         'load arguments' => array($type),
         'title' => 'Settings',
         'page callback' => 'redhen_donation_entity_settings_page',
-        'page arguments' => array(0, 1),
+        'page arguments' => array($type, $position),
         'access callback' => 'redhen_donation_administer_donations_access',
-        'access arguments' => array(0, 1),
+        'access arguments' => array($type, $position),
         'weight' => 9,
         'type' => MENU_LOCAL_TASK,
         'file' => 'includes/redhen_donation.pages.inc',
