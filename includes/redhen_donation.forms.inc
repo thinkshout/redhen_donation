@@ -435,7 +435,7 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation) {
         '#other_description' => t('Please enter an amount.'),
         '#other_unknown_defaults' => 'other',
         '#other_delimiter' => ', ',
-        '#select_type' => $settings['settings']['donation_settings']['donation_entry'] == 'select_other' ? 'select' : 'radios',
+        '#select_type' => $settings['settings']['donation_entry'] == 'select_other' ? 'select' : 'radios',
       );
 
       break;
