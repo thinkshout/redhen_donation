@@ -267,6 +267,9 @@ function redhen_donation_form_field_ui_field_edit_form_validate(&$form, &$form_s
     if ($form_state['values']['field']['cardinality'] !== 1) {
       form_set_error('cardinality', t('Cardinality on donation fields must be set to one.'));
     }
+
+    $donation_amounts = &$form_state['values']['instance']['settings']['default_redhen_donation_settings']['settings']['donation_amounts'];
+    $donation_amounts = redhen_extract_allowed_amounts($donation_amounts);
   }
 }
 
