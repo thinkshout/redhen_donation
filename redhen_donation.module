@@ -196,7 +196,7 @@ function redhen_donation_menu() {
       $entity = entity_create($type, array($bundle_key => $instance['bundle']));
       $uri = entity_uri($type, $entity);
       $path = $uri['path'];
-      $path_parts = explode('/', $path);
+      $path_parts = explode('/', trim($path, '/'));
       $position = count($path_parts);
       $items[$path . '%entity_object/donate'] = array(
         'load arguments' => array($type),
