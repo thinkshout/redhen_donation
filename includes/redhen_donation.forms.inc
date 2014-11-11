@@ -665,8 +665,8 @@ function redhen_donation_form_submit($form, &$form_state) {
     = isset($donation_type->settings['commerce_settings']['line_item_type']) ?
       $donation_type->settings['commerce_settings']['line_item_type'] :
       'product';
-  $order_uid = $donation_user->uid;
-  $order = commerce_cart_order_new($order_uid, $order_type);
+  $uid = isset($donation_user->uid) ? $donation_user->uid : 0;
+  $order = commerce_cart_order_new($uid, $order_type);
   commerce_order_save($order);
   $order_wrapper = entity_metadata_wrapper('commerce_order', $order);
 
@@ -706,7 +706,7 @@ function redhen_donation_form_submit($form, &$form_state) {
   // Add the item to the list of line items.
   $order_wrapper->commerce_line_items[] = $line_item;
 
-  $customer_profile = commerce_customer_profile_new('billing', $donation_user->uid);
+  $customer_profile = commerce_customer_profile_new('billing', $uid);
   $customer_profile->commerce_customer_address[LANGUAGE_NONE][0] = array();
   $billing_address =& $customer_profile->commerce_customer_address[LANGUAGE_NONE][0];
   $form_state['values']['commerce_customer_address']['und'][0]['name_line'] = $form_state['values']['first_name'] . ' ' . $form_state['values']['last_name'];
