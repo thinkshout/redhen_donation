@@ -13,6 +13,7 @@ dependencies[] = select_or_other
 ; Classes
 files[] = lib/redhen_donation.entity.inc
 files[] = lib/redhen_donation.metadata.inc
+files[] = lib/redhen_donation.rules.inc
 files[] = lib/redhen_donation_type.entity.inc
 files[] = lib/redhen_donation_type.ui_controller.inc
 
