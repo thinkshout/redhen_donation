@@ -47,6 +47,12 @@ function hook_redhen_donation_entity_settings($settings) {
 }
 
 /**
+ * Allow modules to customize the title of donation pages.
+ */
+function hook_redhen_donation_title_alter(&$title, $entity_type, $entity) {
+}
+
+/**
  * Provide access to a donation after each save.
  *
  * Useful for calculating running totals.

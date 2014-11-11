@@ -5,6 +5,15 @@
  */
 
 /**
+ * Title callback. Also allows alteration of the title.
+ */
+function redhen_donation_donation_title($entity_type, $entity) {
+  $title = "Donate";
+  drupal_alter('redhen_donation_title', $title, $entity_type, $entity);
+  return $title;
+}
+
+/**
  * Page callback: Add a new donation to a host entity.
  *
  * @param string $entity_type

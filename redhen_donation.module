@@ -200,7 +200,8 @@ function redhen_donation_menu() {
       $position = count($path_parts);
       $items[$path . '%entity_object/donate'] = array(
         'load arguments' => array($type),
-        'title' => 'Donate',
+        'title callback' => 'redhen_donation_donation_title',
+        'title arguments' => array($type, $position),
         'page callback' => 'redhen_donation_donate_page',
         'page arguments' => array($type, $position),
         'access callback' => 'redhen_donation_donate_page_access',
