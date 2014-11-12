@@ -410,12 +410,12 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation) {
   foreach ($settings['settings']['donation_amounts'] as $amount => $description) {
     $donation_amounts[$amount * 100] = $description;
   }
-
+  $amount_title = $form_state['input'] ? t('Donation Amount (@cur)', array('@cur' => $cur)) : t('Donation Amount');
   switch ($settings['settings']['donation_entry']) {
     case 'select':
       $form['donation'] = array(
         '#type' => 'select',
-        '#title' => t('Donation (@cur)', array('@cur' => $cur)),
+        '#title' => $amount_title,
         '#required' => TRUE,
         '#options' => $donation_amounts,
         '#multiple' => FALSE,
@@ -427,7 +427,7 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation) {
 
       $form['donation'] = array(
         '#type' => 'select_or_other',
-        '#title' => t('Donation (@cur)', array('@cur' => $cur)),
+        '#title' => $amount_title,
         '#required' => TRUE,
         '#multiple' => FALSE,
         '#options' => $donation_amounts,
@@ -443,7 +443,7 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation) {
     default:
       $form['donation'] = array(
         '#type' => 'textfield',
-        '#title' => t('Donation (@cur)', array('@cur' => $cur)),
+        '#title' => $amount_title,
         '#default_value' => '',
         '#required' => TRUE,
         '#description' => t('Please enter an amount.'),
