@@ -191,11 +191,17 @@ function redhen_donation_menu() {
   foreach (redhen_donation_get_donation_instances() as $instance) {
     $type = $instance['entity_type'];
     if (!in_array($type, array('redhen_donation', 'redhen_donation_type'))) {
-      $info = entity_get_info($type);
-      $bundle_key = $info['entity keys']['bundle'];
-      $entity = entity_create($type, array($bundle_key => $instance['bundle']));
-      $uri = entity_uri($type, $entity);
-      $path = $uri['path'];
+      if ($type == 'node') {
+        // Node doesn't respond properly to URI requests, so:
+        $path = 'node/';
+      }
+      else {
+        $info = entity_get_info($type);
+        $bundle_key = $info['bundle keys']['bundle'];
+        $entity = entity_create($type, array($bundle_key => $instance['bundle']));
+        $uri = method_exists($entity, 'uri') ? $entity->uri() : entity_uri($type, $entity);
+        $path = $uri['path'];
+      }
       $path_parts = explode('/', trim($path, '/'));
       $position = count($path_parts);
       $items[$path . '%entity_object/donate'] = array(
