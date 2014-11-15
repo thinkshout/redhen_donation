@@ -190,6 +190,12 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
     '#description' => t('List of allowed donation amounts. Enter one value per line, in the format amount|label. The amount should be entered as an integer value.'),
   );
 
+//  @todo this would be an excellent compatibility, but the form breaks badly.
+//  if (module_exists('options_element')) {
+//    $form['settings']['donation_amounts']['#type'] = 'options';
+//    $form['settings']['donation_amounts']['#key_type_toggled'] = TRUE;
+//  }
+
   $form['settings']['minimum_donation'] = array(
     '#type' => 'textfield',
     '#title' => t('Minimum donation'),
