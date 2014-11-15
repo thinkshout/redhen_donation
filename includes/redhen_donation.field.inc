@@ -18,7 +18,9 @@ function redhen_donation_field_info() {
         'default_redhen_donation_settings' => array(
           'status' => 0,
           'scheduling' => array(
+            'open_source' => NULL,
             'open' => NULL,
+            'close_source' => NULL,
             'close' => NULL,
           ),
           'settings' => array(),
@@ -65,7 +67,7 @@ function redhen_donation_field_instance_settings_form($field, $instance) {
     '#description' => t("These settings will be applied when an entity with this field is saved and does not yet have it's own settings applied."),
   );
 
-  $settings_form = redhen_donation_entity_settings_form($form['default_redhen_donation_settings'], $form_state, $default_settings);
+  $settings_form = redhen_donation_entity_settings_form($form['default_redhen_donation_settings'], $form_state, $default_settings, $instance['entity_type'], NULL, $instance['bundle']);
 
   // Unset the save button just in case.
   unset($settings_form['save']);

@@ -565,6 +565,8 @@ function redhen_donation_entity_settings($entity_type, $entity_id, $reset = FALS
 
     if ($result) {
       $result['settings'] = unserialize($result['settings']);
+      $result['open_source'] = $result['settings']['open_source'];
+      $result['close_source'] = $result['settings']['close_source'];
     }
   }
 
@@ -629,6 +631,8 @@ function redhen_donation_entity_set_default_settings($entity_type, $entity) {
  *   Properly formatted settings array.
  */
 function redhen_donation_convert_form_settings($values) {
+  $values['settings']['open_source'] = $values['scheduling']['open_source'];
+  $values['settings']['close_source'] = $values['scheduling']['close_source'];
   $fields = array(
     'status' => $values['status'],
     'settings' => serialize($values['settings']),
@@ -637,12 +641,12 @@ function redhen_donation_convert_form_settings($values) {
   );
 
   // Scheduling: open date.
-  if (!empty($values['scheduling']['open'])) {
+  if (empty($values['scheduling']['open_source']) && !empty($values['scheduling']['open'])) {
     $fields['open'] = date('Y-m-d H:i:s', strtotime($values['scheduling']['open']));
   }
 
   // Scheduling: close date.
-  if (!empty($values['scheduling']['close'])) {
+  if (empty($values['scheduling']['close_source']) && !empty($values['scheduling']['close'])) {
     $fields['close'] = date('Y-m-d H:i:s', strtotime($values['scheduling']['close']));
   }
 
@@ -691,8 +695,8 @@ function redhen_donation_status($entity_type, $entity_id, $reset = FALSE, &$erro
 
   $settings = redhen_donation_entity_settings($entity_type, $entity_id, $reset);
   $status = $settings['status'];
-  $open = isset($settings['open']) ? strtotime($settings['open']) : NULL;
-  $close = isset($settings['close']) ? strtotime($settings['close']) : NULL;
+  $open = _redhen_donation_schedule_get('open', $settings, $entity, $entity_type);
+  $close = _redhen_donation_schedule_get('close', $settings, $entity, $entity_type);
   $now = REQUEST_TIME;
 
   // Only explore other settings if main status is enabled.
@@ -727,6 +731,49 @@ function redhen_donation_status($entity_type, $entity_id, $reset = FALSE, &$erro
   );
 
   return $status;
+}
+
+/**
+ * Helper function to gather the configured open or close date.
+ *
+ * @string $bookend
+ *   "open" or "close"
+ * @array $settings
+ * @entity $entity
+ * @string $entity_type
+ *
+ * @return int
+ *   or FALSE if empty.
+ *
+ * @throws EntityMetadataWrapperException
+ */
+function _redhen_donation_schedule_get($bookend, $settings, $entity, $entity_type) {
+  $raw_date = FALSE;
+  if (!empty($settings[$bookend . '_source'])) {
+    // We are sourcing from the parent entity, so we dive into entity metadata
+    // wrapper to extract the value we want.
+    $property = $settings[$bookend . '_source'];
+    $wrapper = entity_metadata_wrapper($entity_type, $entity);
+    if (!empty($property) && strlen($property)) {
+      $elements = explode(':', $property);
+      $object = $wrapper;
+      foreach ($elements as $element) {
+        if ($object instanceof EntityListWrapper) {
+          $object = $object[0];
+        }
+        if ($object->value() === NULL || !isset($object->{$element})) {
+          $object = NULL;
+          break;
+        }
+        $object = $object->{$element};
+      }
+      $raw_date = isset($object) ? (int) $object->value() : FALSE;
+    }
+  }
+  elseif (isset($settings[$bookend])) {
+    $raw_date = strtotime($settings[$bookend]);
+  }
+  return $raw_date;
 }
 
 /**

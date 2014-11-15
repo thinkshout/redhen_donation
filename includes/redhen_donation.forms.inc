@@ -26,7 +26,7 @@
  * @return array
  *   Form array.
  */
-function redhen_donation_entity_settings_form($form, &$form_state, $settings, $entity_type = NULL, $entity_id = NULL) {
+function redhen_donation_entity_settings_form($form, &$form_state, $settings, $entity_type = NULL, $entity_id = NULL, $bundle = NULL) {
   if ($entity_id) {
     // We'll need this info when we submit the form:
     $form_state['entity'] = array(
@@ -65,6 +65,7 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
       )
     ),
     '#default_value' => !empty($settings['open']) ? $settings['open'] : '',
+    '#weight' => 2,
   );
 
   $form['scheduling']['close'] = array(
@@ -77,7 +78,42 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
       )
     ),
     '#default_value' => !empty($settings['close']) ? $settings['close'] : '',
+    '#weight' => 4,
   );
+  if ($entity_id && !$bundle) {
+    $entity = entity_load_single($entity_type, $entity_id);
+    $wrapper = entity_metadata_wrapper($entity_type, $entity);
+    $bundle = $wrapper->getBundle();
+  }
+  if ($bundle) {
+    $options = redhen_donation_fieldmap_options($entity_type, $bundle);
+    $form['scheduling']['open_source'] = array(
+      '#type' => 'select',
+      '#title' => 'Open Date',
+      '#default_value' => isset($settings['open_source']) ? $settings['open_source'] : NULL,
+      '#options' => $options,
+      '#weight' => 1,
+    );
+    $form['scheduling']['close_source'] = array(
+      '#type' => 'select',
+      '#title' => 'Close Date',
+      '#default_value' => isset($settings['close_source']) ? $settings['close_source'] : NULL,
+      '#options' => $options,
+      '#weight' => 3,
+    );
+    $form['scheduling']['open']['#title'] = 'Specify Open Date';
+    $form['scheduling']['open']['#states'] = array(
+      'visible' => array(
+        ':input[name="scheduling[open_source]"]' => array('value' => ''),
+      ),
+    );
+    $form['scheduling']['close']['#title'] = 'Specify Close Date';
+    $form['scheduling']['close']['#states'] = array(
+      'visible' => array(
+        ':input[name="scheduling[close_source]"]' => array('value' => ''),
+      ),
+    );
+  }
   if ($date_popup_installed) {
     $zonename = str_replace('_', ' ', variable_get('date_default_timezone'));
     timezone_identifiers_list();
@@ -1016,4 +1052,67 @@ function redhen_donation_pledged($order_total, $product_wrapper) {
   }
 
   return $return;
+}
+
+/**
+ * Get an array with all possible Drupal properties for a given entity type.
+ *
+ * @param string $entity_type
+ *   Name of entity whose properties to list.
+ * @param string $entity_bundle
+ *   Optional bundle to limit available properties.
+ * @param bool $required
+ *   Set to TRUE if properties are required.
+ * @param string $prefix
+ *   Optional prefix for option IDs in the options list.
+ * @param string $tree
+ *   Optional name of the parent element if this options list is part of a tree.
+ *
+ * @return array
+ *   List of properties that can be used as an #options list.
+ */
+function redhen_donation_fieldmap_options($entity_type, $entity_bundle = NULL, $required = FALSE, $prefix = NULL, $tree = NULL) {
+  $options = array();
+  if (!$prefix) {
+    $options[''] = t('Specify Manually / None');
+  }
+
+  $properties = entity_get_all_property_info($entity_type);
+  if (isset($entity_bundle)) {
+    $info = entity_get_property_info($entity_type);
+    $properties = $info['properties'];
+    if (isset($info['bundles'][$entity_bundle])) {
+      $properties += $info['bundles'][$entity_bundle]['properties'];
+    }
+  }
+
+  foreach ($properties as $key => $property) {
+    $keypath = $prefix ? $prefix . ':' . $key : $key;
+    $type = isset($property['type']) ? entity_property_extract_innermost_type($property['type']) : 'text';
+    if ($type == 'date' || $type == 'entity') {
+      $is_entity = ($type == 'entity') || (bool) entity_get_info($type);
+      $required_property = isset($property['required']) ? $property['required'] : FALSE;
+      $computed_property = isset($property['computed']) ? $property['computed'] : FALSE;
+      if ($is_entity) {
+        // We offer fields on related entities (useful for field collections).
+        // But we only offer 1 level of depth to avoid loops.
+        if (!$prefix) {
+          $bundle = isset($property['bundle']) ? $property['bundle'] : NULL;
+          $options[$property['label']] = redhen_donation_fieldmap_options($type, $bundle, $required, $keypath, $property['label']);
+        }
+      }
+      elseif (!$required || $required_property || $computed_property) {
+        if (isset($property['field']) && $property['field'] && !empty($property['property info'])) {
+          foreach ($property['property info'] as $sub_key => $sub_prop) {
+            $label = isset($tree) ? $tree . ' - ' . $property['label'] : $property['label'];
+            $options[$label][$keypath . ':' . $sub_key] = $sub_prop['label'];
+          }
+        }
+        else {
+          $options[$keypath] = $property['label'];
+        }
+      }
+    }
+  }
+  return $options;
 }
