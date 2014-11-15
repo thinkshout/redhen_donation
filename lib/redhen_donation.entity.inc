@@ -52,22 +52,16 @@ class RedhenDonation extends Entity {
     $wrapper = entity_metadata_wrapper('redhen_donation', $this);
     $author = $wrapper->author->value();
     $transaction_entity_wrapper = $wrapper->transaction_entity;
-
-    $host_entity_type_info = entity_get_info($this->entity_type);
     $host_entity = $wrapper->entity->value();
-    list(, , $host_entity_bundle) = entity_extract_ids($this->entity_type, $host_entity);
 
     $host_label = entity_label($this->entity_type, $host_entity);
 
     $host_uri = $host_entity ? entity_uri($this->entity_type, $host_entity) : NULL;
 
     // Link to host entity.
-    $host_entity_link_label = (isset($host_entity_type_info['bundles'][$host_entity_bundle]['label'])) ?
-      $host_entity_type_info['bundles'][$host_entity_bundle]['label'] : '';
-
     $content['host_entity_link'] = array(
       '#theme' => 'redhen_property_field',
-      '#label' => $host_entity_link_label,
+      '#label' => t('Campaign'),
       '#items' => array(
         array(
           '#markup' => l($host_label, $host_uri['path']),
@@ -80,7 +74,7 @@ class RedhenDonation extends Entity {
     $contact_uri = entity_uri('redhen_contact', $wrapper->contact->value());
     $content['contact'] = array(
       '#theme' => 'redhen_property_field',
-      '#label' => t('RedHen Contact'),
+      '#label' => t('Donor'),
       '#items' => array(
         array(
           '#markup' => l($wrapper->contact->label(), $contact_uri['path']),
@@ -92,13 +86,14 @@ class RedhenDonation extends Entity {
     $author_uri = entity_uri('user', $author);
     $content['author'] = array(
       '#theme' => 'redhen_property_field',
-      '#label' => t('Author'),
+      '#label' => t('User'),
       '#items' => array(
         array(
           '#markup' => $author->uid == 0 ? t('Anonymous') : l($author->name, $author_uri['path']),
         ),
       ),
       '#classes' => 'field field-label-inline clearfix',
+      '#access' => user_access('administer users'),
     );
 
     $content['pledged'] = array(
@@ -271,7 +266,7 @@ class RedhenDonation extends Entity {
       $order_total['currency_code']
     );
     return array(
-      isset($order_uri['path']) ? l($order->order_id, $order_uri['path']) : $order->order_id,
+      l( $order->order_id, 'user/' . $order->uid . '/orders/' . $order->order_id),
       $amount,
       date('m-d-Y H:m', $order->changed),
       $order_status[$order->status]['title'],
