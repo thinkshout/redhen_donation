@@ -169,8 +169,7 @@ function redhen_donation_menu() {
   $items = array();
 
   $items['redhen/donation/%redhen_donation'] = array(
-    'title callback' => 'donation_page_title',
-    'title arguments' => array(2),
+    'title' => 'Donation Details',
     'page callback' => 'redhen_donation_view',
     'page arguments' => array(2),
     'access callback' => 'entity_access',
