@@ -214,7 +214,8 @@ function redhen_donation_field_formatter_view($entity_type, $entity, $field, $in
 
       case 'redhen_donation_link':
         // Enable donation link if accessible.
-        if (redhen_donation_donate_page_access($entity_type, $entity)) {
+        list($entity_id) = entity_extract_ids($entity_type, $entity);
+        if (redhen_donation_donate_page_access($entity_type, $entity) && redhen_donation_status($entity_type, $entity_id)) {
           $uri = entity_uri($entity_type, $entity);
           $element[0] = array(
             '#markup' => theme('redhen_donation_link',
