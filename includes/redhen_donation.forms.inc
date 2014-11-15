@@ -280,12 +280,7 @@ function redhen_donation_entity_settings_form_validate($form, &$form_state) {
   $dates = array('open', 'close');
   foreach ($dates as $date) {
     if (!empty($form_state['values']['scheduling'][$date])) {
-      if ($form['scheduling'][$date]['#type'] == 'date_popup') {
-        if (empty($form_state['values']['scheduling'][$date]['time'])) {
-          form_set_error('scheduling][' . $date . '][time', t('Please select a time for "!date date" in Scheduling.', array('!date' => $date)));
-        }
-      }
-      elseif (strtotime($form_state['values']['scheduling'][$date]) === FALSE) {
+      if ($form['scheduling'][$date]['#type'] != 'date_popup' && strtotime($form_state['values']['scheduling'][$date]) === FALSE) {
         form_set_error('scheduling][' . $date, t('Date is invalid.'));
       }
     }
