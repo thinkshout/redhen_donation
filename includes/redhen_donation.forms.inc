@@ -394,7 +394,7 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation) {
   $form['actions'] = array('#type' => 'actions');
   $form['actions']['submit'] = array(
     '#type' => 'submit',
-    '#value' => isset($commerce_settings['donation_settings']['submit_label']) ? $commerce_settings['donation_settings']['submit_label'] : t('Donate'),
+    '#value' => isset($settings['settings']['submit_label']) ? $settings['settings']['submit_label'] : t('Donate'),
   );
 
   $payment_methods = array();
