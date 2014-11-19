@@ -203,7 +203,7 @@ function redhen_donation_menu() {
       }
       $path_parts = explode('/', trim($path, '/'));
       $position = count($path_parts);
-      $items[$path . '%entity_object/donate'] = array(
+      $items[$path . '%' . $type . '/donate'] = array(
         'load arguments' => array($type),
         'title callback' => 'redhen_donation_donation_title',
         'title arguments' => array($type, $position),
@@ -214,7 +214,7 @@ function redhen_donation_menu() {
         'type' => MENU_LOCAL_TASK,
         'file' => 'includes/redhen_donation.pages.inc',
       );
-      $items[$path . '%entity_object/donations'] = array(
+      $items[$path . '%' . $type . '/donations'] = array(
         'load arguments' => array($type),
         'title' => 'Donations',
         'page callback' => 'redhen_donation_donations_page',
@@ -225,7 +225,7 @@ function redhen_donation_menu() {
         'weight' => 1,
         'file' => 'includes/redhen_donation.pages.inc',
       );
-      $items[$path . '%entity_object/donations/list'] = array(
+      $items[$path . '%' . $type . '/donations/list'] = array(
         'load arguments' => array($type),
         'title' => 'Donations',
         'page callback' => 'redhen_donation_donations_page',
@@ -235,7 +235,7 @@ function redhen_donation_menu() {
         'type' => MENU_DEFAULT_LOCAL_TASK,
         'file' => 'includes/redhen_donation.pages.inc',
       );
-      $items[$path . '%entity_object/donations/settings'] = array(
+      $items[$path . '%' . $type . '/donations/settings'] = array(
         'load arguments' => array($type),
         'title' => 'Settings',
         'page callback' => 'redhen_donation_entity_settings_page',
