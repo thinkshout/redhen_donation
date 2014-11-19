@@ -420,7 +420,7 @@ function redhen_donation_type_form_callback($form, $form_state) {
     case 'delete_method-' . $delta:
       // Replace the field map table.
       $commands = array(
-        ajax_command_replace('#edit-redhen-donation-payment-options-wrapper', render($form['commerce']['payment_options'])),
+        ajax_command_replace('#edit-redhen-donation-payment-options-wrapper', render($form['settings']['commerce_settings']['payment_options'])),
       );
       break;
   }
