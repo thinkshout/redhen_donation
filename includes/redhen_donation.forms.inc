@@ -785,6 +785,8 @@ function redhen_donation_form_submit($form, &$form_state) {
     if ($transaction->status != 'success') {
       commerce_order_status_update($order, 'canceled', FALSE, TRUE, t('Payment declined: @message'), array('@message' => $transaction->message));
       drupal_set_message(t('There was a problem with your payment: @message', array('@message' => $transaction->message)), 'error');
+      // This preserves the form state if a user wants to resubmit.
+      $form_state['redirect'] = FALSE;
       return FALSE;
     }
     else {
