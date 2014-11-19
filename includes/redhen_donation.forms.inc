@@ -430,24 +430,25 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation) {
   }
 
   // Handle currency mapping.
-  $top_payment = current($commerce_settings['payment_methods']);
-  $cur = commerce_currency_get_symbol($top_payment['currency']);
-
-  if ($form_state['input']) {
-    $selected_method = $form_state['input']['payment_method'];
-    foreach ($payment_settings as $payment_setting) {
-      if ($payment_setting['payment_method'] == $selected_method) {
-        $cur = commerce_currency_get_symbol($payment_setting['currency']);
-        continue;
+  $selected_payment_method = current($commerce_settings['payment_methods']);
+  if (!empty($form_state['values']['payment_method'])) {
+    foreach ($commerce_settings['payments_methods'] as $payment_method) {
+      if ($payment_method['payment_method'] == $form_state['values']['payment_method']) {
+        $selected_payment_method  = $payment_method;
+        break;
       }
     }
   }
 
+  // Store the currency, we'll need it for validation.
+  $form_state['currency'] = $selected_payment_method['currency'];
+
+  $cur = commerce_currency_get_symbol($selected_payment_method['currency']);
   $donation_amounts = array();
   foreach ($settings['settings']['donation_amounts'] as $amount => $description) {
     $donation_amounts[$amount * 100] = $description;
   }
-  $amount_title = $form_state['input'] ? t('Donation Amount (@cur)', array('@cur' => $cur)) : t('Donation Amount');
+  $amount_title = t('Donation Amount (@cur)', array('@cur' => $cur));
   switch ($settings['settings']['donation_entry']) {
     case 'select':
       $form['donation'] = array(
