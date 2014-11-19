@@ -446,7 +446,7 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation) {
   $cur = commerce_currency_get_symbol($selected_payment_method['currency']);
   $donation_amounts = array();
   foreach ($settings['settings']['donation_amounts'] as $amount => $description) {
-    $donation_amounts[$amount * 100] = $description;
+    $donation_amounts[$amount] = $description;
   }
   $amount_title = t('Donation Amount (@cur)', array('@cur' => $cur));
   switch ($settings['settings']['donation_entry']) {
@@ -601,6 +601,15 @@ function redhen_donation_form_validate($form, &$form_state) {
 
   // Notify field widgets to validate their data.
   field_attach_form_validate('redhen_donation', $donation, $form, $form_state);
+
+  // Validate 'other' amounts
+  $donation_amount = $form_state['values']['donation'];
+  if (is_numeric($donation_amount) && $donation_amount > 0) {
+    $form_state['values']['donation'] = commerce_currency_decimal_to_amount($donation_amount, $form_state['currency']);
+  }
+  else {
+    form_set_error('donation', t('The donation must be entered as a positive number.'));
+  }
 }
 
 /**
@@ -709,34 +718,9 @@ function redhen_donation_form_submit($form, &$form_state) {
   $order_wrapper = entity_metadata_wrapper('commerce_order', $order);
 
   $line_item = commerce_product_line_item_new($product, 1, $order->order_id, array(), $line_item_type);
-  switch ($settings['settings']['donation_entry']) {
-    case 'select':
-      $donation_amount = $form_state['input']['donation'];
-      break;
 
-    case 'select_other':
-    case 'radio_other':
-      if ($form_state['input']['donation']['other'] == '') {
-        $donation_amount = $form_state['input']['donation']['select'];
-      }
-      else {
-        $clean_amount = preg_replace("/[^0-9.]/", "", $form_state['input']['donation']['other']);
-        $donation_amount = $clean_amount * 100;
-      }
-      break;
-
-    case 'custom':
-      $clean_amount = preg_replace("/[^0-9.]/", "", $form_state['input']['donation']);
-      $donation_amount = $clean_amount * 100;
-  }
-
-  $payment_methods = $donation_type->settings['commerce_settings']['payment_methods'];
-  foreach ($payment_methods as $payment_method) {
-    if ($payment_method['payment_method'] == $form_state['values']['payment_method']) {
-      $currency = $payment_method['currency'];
-      break;
-    }
-  }
+  $donation_amount = $form_state['values']['donation'];
+  $currency = $form_state['currency'];
 
   redhen_donation_update_line_item_price($line_item, $donation_amount, $currency);
   // Save the line item to get the ID.
