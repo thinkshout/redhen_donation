@@ -711,7 +711,8 @@ function redhen_donation_form_submit($form, &$form_state) {
     = isset($donation_type->settings['commerce_settings']['line_item_type']) ?
       $donation_type->settings['commerce_settings']['line_item_type'] :
       'product';
-  $order = commerce_cart_order_new($donation_user->uid, $order_type);
+  $uid = isset($donation_user->uid) ? $donation_user->uid : 0;
+  $order = commerce_cart_order_new($uid, $order_type);
   commerce_order_save($order);
   $order_wrapper = entity_metadata_wrapper('commerce_order', $order);
 
