@@ -727,7 +727,7 @@ function redhen_donation_form_submit($form, &$form_state) {
   // Add the item to the list of line items.
   $order_wrapper->commerce_line_items[] = $line_item;
 
-  $customer_profile = commerce_customer_profile_new('billing', $donation_user->uid);
+  $customer_profile = commerce_customer_profile_new('billing', $uid);
   $customer_profile->commerce_customer_address[LANGUAGE_NONE][0] = array();
   $billing_address =& $customer_profile->commerce_customer_address[LANGUAGE_NONE][0];
   $form_state['values']['commerce_customer_address']['und'][0]['name_line'] = $form_state['values']['first_name'] . ' ' . $form_state['values']['last_name'];
