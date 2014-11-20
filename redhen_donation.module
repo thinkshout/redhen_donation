@@ -1200,6 +1200,8 @@ function redhen_donation_views_pre_view(&$view, &$display_id, &$args) {
 
 /**
  * Implements hook_commerce_payment_order_paid_in_full().
+ *
+ * Increment the donation received amount on recurring orders.
  */
 function redhen_donation_commerce_payment_order_paid_in_full($order, $transaction) {
   if ($order->status == 'recurring_pending') {
@@ -1208,6 +1210,12 @@ function redhen_donation_commerce_payment_order_paid_in_full($order, $transactio
     $recurring_entity_wrapper = entity_metadata_wrapper('commerce_recurring', $recurring_entity);
     $recurring_product_wrapper = $recurring_entity_wrapper->commerce_recurring_ref_product->value();
     $donation = redhen_donation_load_by_transaction_entity('commerce_recurring', $recurring_entity->id);
+
+    // There is no donation associated with this recurring order.
+    if (empty($donation)) {
+      return;
+    }
+
     $donation_wrapper = entity_metadata_wrapper('redhen_donation', $donation);
 
     $received = $donation_wrapper->received->value();
