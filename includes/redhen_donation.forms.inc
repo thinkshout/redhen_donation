@@ -539,12 +539,11 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation) {
     $billing_address_field = $contact_settings['profile_selector'];
     $billing->commerce_customer_address = $contact_object->{$billing_address_field};
   }
-
-  field_attach_form('commerce_customer_profile', $billing, $form, $form_state);
-
-  $form['commerce_customer_address'][LANGUAGE_NONE][0]['name_block']['#access'] = FALSE;
-  $form['commerce_customer_address'][LANGUAGE_NONE][0]['#title'] = t('Billing address');
-  $form['commerce_customer_address']['#weight'] = 49;
+  $form['customer_profile'] = array('#weight' => 1);
+  field_attach_form('commerce_customer_profile', $billing, $form['customer_profile'], $form_state);
+  $form['customer_profile']['commerce_customer_address'][LANGUAGE_NONE][0]['name_block']['#access'] = FALSE;
+  $form['customer_profile']['commerce_customer_address'][LANGUAGE_NONE][0]['#title'] = t('Billing address');
+  $form['customer_profile']['commerce_customer_address']['#weight'] = 49;
 
   if (isset($form_state['values'])) {
     $default_method = $form_state['values']['payment_method'];
