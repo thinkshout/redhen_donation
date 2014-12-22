@@ -411,10 +411,8 @@ function redhen_donation_donate_page_access($entity_type, $entity) {
       'type' => $type,
     ));
     if (entity_access('create', 'redhen_donation', $donation)) {
-      $settings = redhen_donation_entity_settings($entity_type, $entity_id);
-      if ($settings['status']) {
-        return TRUE;
-      }
+      $status = redhen_donation_status($entity_type, $entity_id);
+      return $status;
     }
   }
 
@@ -752,7 +750,7 @@ function redhen_donation_status($entity_type, $entity_id, $reset = FALSE, &$erro
  * @throws EntityMetadataWrapperException
  */
 function _redhen_donation_schedule_get($bookend, $settings, $entity, $entity_type) {
-  $raw_date = FALSE;
+  $raw_date = NULL;
   if (!empty($settings[$bookend . '_source'])) {
     // We are sourcing from the parent entity, so we dive into entity metadata
     // wrapper to extract the value we want.
