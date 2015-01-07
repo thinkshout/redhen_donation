@@ -205,6 +205,7 @@ function redhen_donation_menu() {
       $position = count($path_parts);
       $items[$path . '%' . $type . '/donate'] = array(
         'load arguments' => array($type),
+        'title' => 'Donate',
         'title callback' => 'redhen_donation_donation_title',
         'title arguments' => array($type, $position),
         'page callback' => 'redhen_donation_donate_page',
