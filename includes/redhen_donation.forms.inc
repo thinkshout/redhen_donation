@@ -535,7 +535,7 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation) {
   $billing_user = !is_null($contact_object->uid) ? $contact_object->uid : $user->uid;
   $billing = commerce_customer_profile_new('billing', $billing_user);
   // Set default contact address.
-  if (!(is_null($contact_object->contact_id)) && isset($contact_settings['profile_selector'])) {
+  if (!(is_null($contact_object->contact_id)) && !empty($contact_settings['profile_selector']) && 'billing' != $contact_settings['profile_selector']) {
     $billing_address_field = $contact_settings['profile_selector'];
     $billing->commerce_customer_address = $contact_object->{$billing_address_field};
   }
@@ -630,6 +630,7 @@ function redhen_donation_form_submit($form, &$form_state) {
     // Attempt to load contact based on given email.
     if ($contact_email_search = redhen_contact_load_by_mail($form_state['values']['email'])) {
       $contact = current($contact_email_search);
+      $new_contact = FALSE;
     }
   }
 
