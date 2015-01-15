@@ -175,6 +175,19 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
       $donation_amounts = $settings['settings']['donation_amounts'];
     }
   }
+  $form['settings']['donation_amounts_label'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Amount selection label'),
+    '#default_value' => isset($settings['settings']['donation_amounts_label']) ? $settings['settings']['donation_amounts_label'] : 'Donation Amounts (@cur)',
+    '#states' => array(
+      'invisible' => array(
+        ':input[name="settings[donation_entry]"]' => array(
+          'value' => 'custom',
+        ),
+      ),
+    ),
+    '#description' => t('Label for the list of allowed donation amounts. Include "@cur" to produce a currency symbol.'),
+  );
 
   $form['settings']['donation_amounts'] = array(
     '#type' => 'textarea',
@@ -448,7 +461,7 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation) {
   foreach ($settings['settings']['donation_amounts'] as $amount => $description) {
     $donation_amounts[$amount] = $description;
   }
-  $amount_title = t('Donation Amount (@cur)', array('@cur' => $cur));
+  $amount_title = format_string($settings['settings']['donation_amounts_label'], array('@cur' => $cur));
   switch ($settings['settings']['donation_entry']) {
     case 'select':
       $form['donation'] = array(
