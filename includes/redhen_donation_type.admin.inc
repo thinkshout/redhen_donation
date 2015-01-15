@@ -240,7 +240,7 @@ function redhen_donation_type_form($form, &$form_state, $donation_type, $op = 'e
         '#multiple' => TRUE,
         '#title' => t('Recurring Product'),
         '#options' => $rec_product_options,
-        '#default_value' => $donation_type->settings['settings']['commerce_settings']['product_options']['recurring'],
+        '#default_value' => $donation_type->settings['commerce_settings']['product_options']['recurring'],
         '#description' => t('Choose a recurring product.'),
       );
       foreach ($form['settings']['commerce_settings']['product_options']['recurring']['#options'] as $key => $label) {
