@@ -727,6 +727,9 @@ function redhen_donation_form_submit($form, &$form_state) {
       'product';
   $uid = isset($donation_user->uid) ? $donation_user->uid : 0;
   $order = commerce_cart_order_new($uid, $order_type);
+  if (empty($order->mail)) {
+    $order->mail = $contact_wrapper->email->value();
+  }
   commerce_order_save($order);
   $order_wrapper = entity_metadata_wrapper('commerce_order', $order);
 
