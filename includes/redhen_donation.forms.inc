@@ -505,9 +505,9 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation) {
       $product_list[$product_id] = $product->title;
       $descriptions[$product_id] = redhen_donation_product_description($product_wrapper);
     }
-    $product_label = $commerce_settings['payment_options']['product_options']['product_select_label'] == "" ?
+    $product_label = $commerce_settings['product_options']['product_select_label'] == "" ?
       t('Donation Type') :
-      $settings['settings']['commerce']['product_options']['product_select_label'];
+      $commerce_settings['product_options']['product_select_label'];
     $form['product'] = array(
       '#type' => 'radios',
       '#title' => $product_label,
