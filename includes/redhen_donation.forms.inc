@@ -501,7 +501,15 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation) {
       );
       break;
   }
-
+  $form['line_item'] = array('#weight' => 0);
+  $line_item = commerce_line_item_new($donation_type->settings['commerce_settings']['line_item_type']);
+  field_attach_form('commerce_line_item', $line_item, $form['line_item'], $form_state);
+  $line_item_fields = field_info_instances('commerce_line_item', $donation_type->settings['commerce_settings']['line_item_type']);
+  foreach ($line_item_fields as $li_field) {
+    if (empty($li_field['commerce_cart_settings']['field_access'])) {
+      unset($form['line_item'][$li_field['field_name']]);
+    }
+  }
   $products = commerce_product_load_multiple(
     array_merge(
       array(
@@ -614,6 +622,7 @@ function redhen_donation_form_validate($form, &$form_state) {
   // Notify field widgets to validate their data.
   field_attach_form_validate('redhen_donation', $donation, $form, $form_state);
   field_attach_form_validate('commerce_customer_profile', $donation, $form['customer_profile'], $form_state);
+  field_attach_form_validate('commerce_commerce_line_item', $donation, $form['line_item'], $form_state);
 
   // Validate 'other' amounts.
   $donation_amount = $form_state['values']['donation'];
@@ -735,7 +744,7 @@ function redhen_donation_form_submit($form, &$form_state) {
   $order_wrapper = entity_metadata_wrapper('commerce_order', $order);
 
   $line_item = commerce_product_line_item_new($product, 1, $order->order_id, array(), $line_item_type);
-
+  field_attach_submit('commerce_line_item', $line_item, $form['line_item'], $form_state);
   $donation_amount = $form_state['values']['donation'];
   $currency = $form_state['currency'];
 
