@@ -613,6 +613,7 @@ function redhen_donation_form_validate($form, &$form_state) {
 
   // Notify field widgets to validate their data.
   field_attach_form_validate('redhen_donation', $donation, $form, $form_state);
+  field_attach_form_validate('commerce_customer_profile', $donation, $form['customer_profile'], $form_state);
 
   // Validate 'other' amounts.
   $donation_amount = $form_state['values']['donation'];
