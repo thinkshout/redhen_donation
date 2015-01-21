@@ -541,18 +541,11 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation) {
   }
   else {
     $product = current($products);
-    $product_wrapper = entity_metadata_wrapper('commerce_product', $product);
     $form['product'] = array(
       '#type' => 'hidden',
       '#value' => $product->product_id,
     );
-    $form['product_label'] = array(
-      '#type' => 'item',
-      '#title' => $product->title,
-      '#markup' => redhen_donation_product_description($product_wrapper),
-    );
   }
-
   $billing_user = !is_null($contact_object->uid) ? $contact_object->uid : $user->uid;
   $billing = commerce_customer_profile_new('billing', $billing_user);
   // Set default contact address.
@@ -742,7 +735,6 @@ function redhen_donation_form_submit($form, &$form_state) {
   }
   commerce_order_save($order);
   $order_wrapper = entity_metadata_wrapper('commerce_order', $order);
-
   $line_item = commerce_product_line_item_new($product, 1, $order->order_id, array(), $line_item_type);
   field_attach_submit('commerce_line_item', $line_item, $form['line_item'], $form_state);
   $donation_amount = $form_state['values']['donation'];
