@@ -263,10 +263,15 @@ function redhen_donation_type_form($form, &$form_state, $donation_type, $op = 'e
   );
   $payment_rules = rules_config_load_multiple(FALSE, $conditions);
   foreach ($payment_rules as $name => $rule) {
+    // Todo Note: Submit patch to commerce_payment_example.module to have the payment_method store an array containing a method_id.
     foreach ($rule->actions() as $action) {
-      $method = isset($action->settings['payment_method']['method_id']) ?
-        $action->settings['payment_method']['method_id'] :
-        FALSE;
+      if ($action->settings['payment_method'] == "commerce_payment_example") {
+         $method = $action->settings['payment_method'];
+      } elseif (isset($action->settings['payment_method']['method_id'])) {
+        $method = $action->settings['payment_method']['method_id'];
+      } else {
+        $method = FALSE;
+      }
     }
     if ($method) {
       $payment_options[$method . '|' . $name] = $rule->label;
