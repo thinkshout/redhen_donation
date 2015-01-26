@@ -704,7 +704,11 @@ function redhen_donation_form_submit($form, &$form_state) {
     // Set Address field if needed.
     if ($donation_type->settings['contact_settings']['profile_selector'] != 'billing') {
       $sync_field = $donation_type->settings['contact_settings']['profile_selector'];
-      $contact_address = empty($contact_wrapper->{$sync_field}) ? array() : $contact_wrapper->{$sync_field}->value();
+      $contact_address = array();
+      if (!empty($contact_wrapper->{$sync_field}) && !empty($contact_wrapper->{$sync_field}->value())) {
+        $contact_address = $contact_wrapper->{$sync_field}->value();
+      }
+
       $billing_address = $form_state['values']['commerce_customer_address'][LANGUAGE_NONE][0];
       $updated_address = array_merge($contact_address, $billing_address);
       $contact_wrapper->{$sync_field}->set($updated_address);
