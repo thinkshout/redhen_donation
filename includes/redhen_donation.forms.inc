@@ -743,7 +743,7 @@ function redhen_donation_form_submit($form, &$form_state) {
         'mail' => $form_state['values']['email'],
         'pass' => $password,
         'status' => 1,
-        'init' => $form['values']['email'],
+        'init' => $form_state['values']['email'],
         'roles' => array(
           DRUPAL_AUTHENTICATED_RID => 'authenticated user',
         ),
