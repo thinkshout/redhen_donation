@@ -811,15 +811,12 @@ function redhen_donation_form_submit($form, &$form_state) {
     // Payment method values.
     $details_values = !empty($form_state['values']['payment_details']) ? $form_state['values']['payment_details'] : $form_state['input']['payment_details'];
 
-    // If recurring check if COF.
+    // If recurring, we need a stored card on file for future transactions.
     if ($recurring_product) {
-      $default_cof = commerce_cardonfile_load_multiple_by_uid($donation_user->uid, NULL, TRUE);
-      if (!$default_cof) {
-        $details_values['cardonfile_instance_default'] = TRUE;
-        $details_values['cardonfile'] = 'new';
-        $details_values['credit_card']['cardonfile_store'] = TRUE;
-        $details_values['credit_card']['default'] = TRUE;
-      }
+      $details_values['cardonfile_instance_default'] = TRUE;
+      $details_values['cardonfile'] = 'new';
+      $details_values['credit_card']['cardonfile_store'] = TRUE;
+      $details_values['credit_card']['default'] = TRUE;
     }
 
     $callback($payment_method, $details_form, $details_values, $order, $charge);
