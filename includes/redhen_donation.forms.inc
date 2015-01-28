@@ -705,8 +705,12 @@ function redhen_donation_form_submit($form, &$form_state) {
     if ($donation_type->settings['contact_settings']['profile_selector'] != 'billing') {
       $sync_field = $donation_type->settings['contact_settings']['profile_selector'];
       $contact_address = array();
-      if (!empty($contact_wrapper->{$sync_field}) && !empty($contact_wrapper->{$sync_field}->value())) {
-        $contact_address = $contact_wrapper->{$sync_field}->value();
+      if (!empty($contact_wrapper->{$sync_field})) {
+        // The wrapper can be set, but the value equal to null in some cases.
+        // Check for this specific case to avoid a notice. More verbose to
+        // support older (< 5.5) PHP versions.
+        $contact_address_value = $contact_wrapper->{$sync_field}->value();
+        $contact_address = (empty($contact_address_value)) ? array() : $contact_address_value;
       }
 
       $billing_address = $form_state['values']['commerce_customer_address'][LANGUAGE_NONE][0];
