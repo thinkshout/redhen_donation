@@ -495,7 +495,8 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation) {
     $donation_amounts[$amount] = $description;
   }
   $donation_amounts_default = isset($settings['settings']['donation_amounts_default']) ? $settings['settings']['donation_amounts_default'] : '';
-  $amount_title = format_string($settings['settings']['donation_amounts_label'], array('@cur' => $cur));
+  $amount_label = isset($settings['settings']['donation_amounts_label']) ? $settings['settings']['donation_amounts_label'] : 'Donation Amount (@cur)';
+  $amount_title = format_string($amount_label, array('@cur' => $cur));
   switch ($settings['settings']['donation_entry']) {
     case 'select':
       $form['donation'] = array(
