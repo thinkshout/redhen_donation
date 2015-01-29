@@ -160,7 +160,8 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
     '#options' => array(
       'select' => t('Select list'),
       'select_other' => t("Select list (with 'other' option)"),
-      'radio_other' => t("Radio options (with 'other' option)"),
+      'radios' => t("Radio buttons"),
+      'radio_other' => t("Radio buttons (with 'other' option)"),
       'custom' => t('Text field (custom amount)'),
     ),
     '#description' => t('Select the type of options widget to use for donation amount.'),
@@ -236,6 +237,22 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
     $form['settings']['donation_amounts'] = $element;
   }
 
+  $form['settings']['other_label'] = array(
+    '#type' => 'textfield',
+    '#title' => t('"Other" option label'),
+    '#default_value' => isset($settings['settings']['other_label']) ? $settings['settings']['other_label'] : 'Other',
+    '#description' => t('Enter label for the "Other Amount" option.'),
+    '#states' => array(
+      'invisible' => array(
+        ':input[name="settings[donation_entry]"]' => array(
+          array('value' => 'select'),
+          array('value' => 'radios'),
+          array('value' => 'custom'),
+        ),
+      ),
+    ),
+  );
+
   $form['settings']['minimum_donation'] = array(
     '#type' => 'textfield',
     '#title' => t('Minimum donation'),
@@ -244,7 +261,8 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
     '#states' => array(
       'invisible' => array(
         ':input[name="settings[donation_entry]"]' => array(
-          'value' => 'select',
+          array('value' => 'select'),
+          array('value' => 'radios'),
         ),
       ),
     ),
@@ -258,7 +276,8 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
     '#states' => array(
       'invisible' => array(
         ':input[name="settings[donation_entry]"]' => array(
-          'value' => 'select',
+          array('value' => 'select'),
+          array('value' => 'radios'),
         ),
       ),
     ),
@@ -269,13 +288,6 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
     '#title' => t('Submit button'),
     '#default_value' => isset($settings['settings']['submit_label']) ? $settings['settings']['submit_label'] : 'Donate',
     '#description' => t('The text on the form submission button.'),
-    '#states' => array(
-      'invisible' => array(
-        ':input[name="settings[donation_entry]"]' => array(
-          'value' => 'select',
-        ),
-      ),
-    ),
   );
 
   // Allow other modules to add their own custom settings:
@@ -301,9 +313,8 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
  */
 function redhen_donation_entity_settings_form_validate($form, &$form_state) {
   // Extract allowed amounts.
-  if ($form_state['values']['settings']['donation_entry'] == 'select' ||
-    $form_state['values']['settings']['donation_entry'] == 'select_other' ||
-    $form_state['values']['settings']['donation_entry'] == 'radio_other') {
+  $selection_options = array('select', 'radios', 'select_other', 'radio_other');
+  if (in_array($form_state['values']['settings']['donation_entry'], $selection_options)) {
     if (module_exists('options_element')) {
       $form_state['values']['settings']['donation_amounts'] = form_options_from_text($form_state['values']['settings']['donation_amounts']['options_text'], 'mixed');
       $form_state['values']['settings']['donation_amounts_default'] = $form_state['input']['settings']['donation_amounts']['default_value_field'];
@@ -505,8 +516,9 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation) {
   $amount_title = format_string($amount_label, array('@cur' => $cur));
   switch ($settings['settings']['donation_entry']) {
     case 'select':
+    case 'radios':
       $form['donation'] = array(
-        '#type' => 'select',
+        '#type' => $settings['settings']['donation_entry'],
         '#title' => $amount_title,
         '#required' => TRUE,
         '#options' => $donation_amounts,
@@ -525,7 +537,7 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation) {
         '#multiple' => FALSE,
         '#options' => $donation_amounts,
         '#default_value' => $donation_amounts_default,
-        '#other' => t('Other'),
+        '#other' => isset($settings['settings']['other_label']) ? $settings['settings']['other_label'] : t('Other'),
         '#other_description' => t('Please enter an amount.'),
         '#other_unknown_defaults' => 'other',
         '#other_delimiter' => ', ',
