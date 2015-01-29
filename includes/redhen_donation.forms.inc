@@ -369,6 +369,7 @@ function redhen_donation_entity_settings_form_submit($form, &$form_state) {
  */
 function redhen_donation_form($form, &$form_state, RedhenDonation $donation) {
   global $user;
+  $params = drupal_get_query_parameters();
   $form_state['donation'] = $donation;
 
   if (!isset($form_state['#donation_settings'])) {
@@ -494,7 +495,12 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation) {
   foreach ($settings['settings']['donation_amounts'] as $amount => $description) {
     $donation_amounts[$amount] = $description;
   }
-  $donation_amounts_default = isset($settings['settings']['donation_amounts_default']) ? $settings['settings']['donation_amounts_default'] : '';
+  if (isset($params['amount'])) {
+    $donation_amounts_default = $params['amount'];
+  }
+  else {
+    $donation_amounts_default = isset($settings['settings']['donation_amounts_default']) ? $settings['settings']['donation_amounts_default'] : '';
+  }
   $amount_label = isset($settings['settings']['donation_amounts_label']) ? $settings['settings']['donation_amounts_label'] : 'Donation Amount (@cur)';
   $amount_title = format_string($amount_label, array('@cur' => $cur));
   switch ($settings['settings']['donation_entry']) {
