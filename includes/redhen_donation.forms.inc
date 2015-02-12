@@ -149,7 +149,7 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
   $form['settings']['confirmation_message'] = array(
     '#type' => 'textfield',
     '#title' => t('Confirmation message'),
-    '#default_value' => isset($settings['settings']['donation_settings']['confirmation_message']) ? $settings['settings']['donation_settings']['confirmation_message'] : 'Thank you for your donation!',
+    '#default_value' => isset($settings['settings']['confirmation_message']) ? $settings['settings']['confirmation_message'] : 'Thank you for your donation!',
     '#description' => t('Set the message to appear after a successful donation. Leave blank to display no message.'),
   );
 
