@@ -565,14 +565,19 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation) {
       unset($form['line_item'][$li_field['field_name']]);
     }
   }
-  $products = commerce_product_load_multiple(
-    array_merge(
+
+  // Load Commerce products based on the donation type settings.
+  $product_ids = array($commerce_settings['product_options']['one_time_product']);
+  if (isset($commerce_settings['product_options']['recurring'])) {
+    $product_ids = array_merge(
       array(
         $commerce_settings['product_options']['one_time_product'],
       ),
       $commerce_settings['product_options']['recurring']
-    )
-  );
+    );
+  }
+  $products = commerce_product_load_multiple($product_ids);
+
   if (count($products) > 1) {
     $descriptions = array();
     $product_list = array();
