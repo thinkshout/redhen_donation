@@ -74,6 +74,12 @@ function redhen_donation_type_form($form, &$form_state, $donation_type, $op = 'e
     '#suffix' => '</div>',
   );
 
+  $form['settings']['contact_settings']['profile_selector'] = array(
+    '#type' => 'item',
+    '#prefix' => '<div id="redhen-profile-selector-wrapper">',
+    '#suffix' => '</div>',
+  );
+
   $contact_type = NULL;
   if (!empty($form_state['values']['settings']['contact_settings']['contact_type'])) {
     $contact_type = $form_state['values']['settings']['contact_settings']['contact_type'];
@@ -122,6 +128,8 @@ function redhen_donation_type_form($form, &$form_state, $donation_type, $op = 'e
         '#description' => t(
           'Select a contact address field to sync with the billing profile. If "none" is selected, no Contact address fields will be updated with the information provided.'
         ),
+        '#prefix' => '<div id="redhen-profile-selector-wrapper">',
+        '#suffix' => '</div>',
       );
     }
   }
@@ -416,7 +424,9 @@ function redhen_donation_type_form_callback($form, $form_state) {
   $commands = array();
   switch ($trigger) {
     case 'settings[contact_settings][contact_type]':
-      return $form['settings']['contact_settings']['fields'];
+      $commands[] = ajax_command_replace('#redhen-field-wrapper', render($form['settings']['contact_settings']['fields']));
+      $commands[] = ajax_command_replace('#redhen-profile-selector-wrapper', render($form['settings']['contact_settings']['profile_selector']));
+      break;
 
     case 'settings[commerce_settings][one_time_product_type]':
       return $form['settings']['commerce_settings']['product_options'];
