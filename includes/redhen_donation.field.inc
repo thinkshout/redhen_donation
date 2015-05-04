@@ -272,7 +272,12 @@ function redhen_donation_form_field_ui_field_edit_form_validate(&$form, &$form_s
     }
 
     $donation_amounts = &$form_state['values']['instance']['settings']['default_redhen_donation_settings']['settings']['donation_amounts'];
-    $donation_amounts = redhen_extract_allowed_amounts($donation_amounts);
+    if (module_exists('options_element')) {
+      $donation_amounts = form_options_from_text($donation_amounts['options_text'], 'mixed');
+    }
+    else {
+      $donation_amounts = redhen_extract_allowed_amounts($donation_amounts);
+    }
   }
 }
 
