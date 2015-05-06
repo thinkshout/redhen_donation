@@ -427,7 +427,7 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation) {
   foreach ($fields as $field) {
     $field_info = field_info_field($field['field_name']);
     // Check for field settings.
-    $field_setting = isset($settings['settings']['redhen_fields']['fields'][$field_info['field_name']])
+    $field_setting = isset($contact_settings['fields'][$field_info['field_name']])
       ? $contact_settings['fields'][$field_info['field_name']]
       : NULL;
     if ($field_info['type'] != 'addressfield' && $field_setting) {
