@@ -380,7 +380,6 @@ function redhen_donation_entity_settings_form_submit($form, &$form_state) {
  */
 function redhen_donation_form($form, &$form_state, RedhenDonation $donation) {
   global $user;
-  $params = drupal_get_query_parameters();
   $form_state['donation'] = $donation;
 
   if (!isset($form_state['#donation_settings'])) {
@@ -506,12 +505,7 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation) {
   foreach ($settings['settings']['donation_amounts'] as $amount => $description) {
     $donation_amounts[$amount] = $description;
   }
-  if (isset($params['amount'])) {
-    $donation_amounts_default = $params['amount'];
-  }
-  else {
-    $donation_amounts_default = isset($settings['settings']['donation_amounts_default']) ? $settings['settings']['donation_amounts_default'] : '';
-  }
+  $donation_amounts_default = isset($settings['settings']['donation_amounts_default']) ? $settings['settings']['donation_amounts_default'] : '';
   $amount_label = isset($settings['settings']['donation_amounts_label']) ? $settings['settings']['donation_amounts_label'] : 'Donation Amount (@cur)';
   $amount_title = format_string($amount_label, array('@cur' => $cur));
   switch ($settings['settings']['donation_entry']) {
@@ -654,15 +648,30 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation) {
 
   $form['commerce_payment_form'] = array_merge($form['commerce_payment_form'], $pane_form);
 
+  $params = drupal_get_query_parameters();
+
+  if (isset($params['amount'])) {
+    //backwards-compatibility for query param donation amounts (100a9f11c6)
+    $params['donation'] = $params['amount'];
+  }
+
   redhen_donation_override_form_default_values($form, $params);
 
   return $form;
 }
 
 /**
- * Takes an element array, and recursively sets form default_values on children based on the specified parameters
- * @param array $form
- * @param array $params
+ * Takes an element array, and recursively sets form default_values on children
+ * based on the specified parameters. (This logic carries with it the technical
+ * assumption that query parameters passed to a donation form are *supposed* to
+ * set corresponding values on donation forms. If this is not the case, we will
+ * need to revisit this implementation.)
+ *
+ * Note: if there are fields with name collisions, this function will be greedy
+ * and set *all* of their values.
+ *
+ * @param array $form element array
+ * @param array $params parameters
  */
 function redhen_donation_override_form_default_values(&$form, $params) {
   $children = element_children($form);
