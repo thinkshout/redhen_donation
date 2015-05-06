@@ -654,7 +654,27 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation) {
 
   $form['commerce_payment_form'] = array_merge($form['commerce_payment_form'], $pane_form);
 
+  redhen_donation_override_form_default_values($form, $params);
+
   return $form;
+}
+
+/**
+ * Takes an element array, and recursively sets form default_values on children based on the specified parameters
+ * @param array $form
+ * @param array $params
+ */
+function redhen_donation_override_form_default_values(&$form, $params) {
+  $children = element_children($form);
+  foreach($children as $key) {
+    $form_field = &$form[$key];
+    if(is_array($form_field)) {
+      if(isset($form_field['#type']) && isset($params[$key])) {
+        $form_field['#default_value'] = $params[$key];
+      }
+      redhen_donation_override_form_default_values($form_field, $params);
+    }
+  }
 }
 
 /**
