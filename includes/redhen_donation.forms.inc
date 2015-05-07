@@ -675,8 +675,17 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation) {
  */
 function redhen_donation_override_form_default_values(&$form, $params) {
   $children = element_children($form);
+
   foreach($children as $key) {
     $form_field = &$form[$key];
+
+    $field_keys = array(LANGUAGE_NONE, 0, 'value');
+    foreach($field_keys as $field_key) {
+      if(isset($form_field[$field_key])) {
+        $form_field = &$form_field[$field_key];
+      }
+    }
+
     if(is_array($form_field)) {
       if(isset($form_field['#type']) && isset($params[$key])) {
         $form_field['#default_value'] = $params[$key];
