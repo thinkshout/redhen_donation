@@ -43,6 +43,14 @@ function redhen_donation_field_instance_settings_form($field, $instance) {
 
   $default_settings = isset($instance['settings']['default_redhen_donation_settings']) ? $instance['settings']['default_redhen_donation_settings'] : array();
 
+  $form['donate_tab'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Enable Donate Tab'),
+    '#default_value' => isset($settings['donate_tab']) ? $settings['donate_tab'] : TRUE,
+    '#required' => FALSE,
+    '#description' => t('Enable a tab on the content displaying the donation form.'),
+  );
+
   // Flatten scheduling and reminder settings since this form is in tree mode.
   foreach ($default_settings as $key => $val) {
     if ($key != 'settings' and is_array($val)) {

@@ -278,3 +278,15 @@ function redhen_donation_update_7001() {
   db_drop_field('redhen_donation', 'status');
   drupal_get_schema('redhen_donation', TRUE);
 }
+
+/**
+ * Set default configuration for "donate tab" display.
+ */
+function redhen_donation_update_7002() {
+  foreach (redhen_donation_get_donation_instances() as $instance) {
+    if (!isset($instance['settings']['donate_tab'])) {
+      $instance['settings']['donate_tab'] = 1;
+      field_update_instance($instance);
+    }
+  }
+}

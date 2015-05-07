@@ -205,18 +205,20 @@ function redhen_donation_menu() {
       }
       $path_parts = explode('/', trim($path, '/'));
       $position = count($path_parts);
-      $items[$menu_root . '/donate'] = array(
-        'load arguments' => array($type),
-        'title' => 'Donate',
-        'title callback' => 'redhen_donation_donation_title',
-        'title arguments' => array($type, $position),
-        'page callback' => 'redhen_donation_donate_page',
-        'page arguments' => array($type, $position),
-        'access callback' => 'redhen_donation_donate_page_access',
-        'access arguments' => array($type, $position),
-        'type' => MENU_LOCAL_TASK,
-        'file' => 'includes/redhen_donation.pages.inc',
-      );
+      if (!empty($instance['settings']['donate_tab'])) {
+        $items[$menu_root . '/donate'] = array(
+          'load arguments' => array($type),
+          'title' => 'Donate',
+          'title callback' => 'redhen_donation_donation_title',
+          'title arguments' => array($type, $position),
+          'page callback' => 'redhen_donation_donate_page',
+          'page arguments' => array($type, $position),
+          'access callback' => 'redhen_donation_donate_page_access',
+          'access arguments' => array($type, $position),
+          'type' => MENU_LOCAL_TASK,
+          'file' => 'includes/redhen_donation.pages.inc',
+        );
+      }
       $items[$menu_root . '/donations'] = array(
         'load arguments' => array($type),
         'title' => 'Donations',
