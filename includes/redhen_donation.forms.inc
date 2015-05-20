@@ -185,7 +185,12 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
   $donation_amounts = '';
   if (isset($settings['settings']['donation_amounts'])) {
     if (is_array($settings['settings']['donation_amounts'])) {
-      $donation_amounts = redhen_allowed_amounts_string($settings['settings']['donation_amounts']);
+      if (isset($settings['settings']['donation_amounts']['options_text'])) {
+        $donation_amounts = $settings['settings']['donation_amounts']['options_text'];
+      }
+      else {
+        $donation_amounts = redhen_allowed_amounts_string($settings['settings']['donation_amounts']);
+      }
     }
     else {
       $donation_amounts = $settings['settings']['donation_amounts'];
