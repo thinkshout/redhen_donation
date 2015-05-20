@@ -968,7 +968,7 @@ function redhen_donation_form_submit($form, &$form_state) {
       $host_entity = entity_metadata_wrapper($settings['entity_type'], $settings['entity_id']);
       $form_state['redirect'] = array($host_entity->url->value());
     }
-    rules_invoke_event('redhen_donation_donation_completed', $donation, $transaction);
+    rules_invoke_event('redhen_donation_donation_completed', $donation, $transaction, $line_item);
   }
   else {
     drupal_set_message(t('There was a problem submitting your donation.'));
