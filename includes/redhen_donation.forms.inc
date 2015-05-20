@@ -148,11 +148,26 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
 
   $form['settings']['confirmation_message'] = array(
     '#type' => 'textfield',
+    '#size' => 120,
     '#title' => t('Confirmation message'),
     '#default_value' => isset($settings['settings']['confirmation_message']) ? $settings['settings']['confirmation_message'] : 'Thank you for your donation!',
     '#description' => t('Set the message to appear after a successful donation. Leave blank to display no message.'),
   );
-
+  // Display the list of available placeholders if token module is installed.
+  if (module_exists('token')) {
+    $form['settings']['confirmation_message']['#description'] .= ' ' . t('Tokens may be used.');
+    $form['settings']['token_help'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Available Tokens'),
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+      '#tree' => TRUE,
+      'token_help_details' => array(
+        '#theme' => 'token_tree',
+        '#token_types' => array('redhen_donation', 'redhen_donation_type'),
+      ),
+    );
+  }
   $form['settings']['donation_entry'] = array(
     '#type' => 'select',
     '#title' => t('Donation entry'),
@@ -930,7 +945,15 @@ function redhen_donation_form_submit($form, &$form_state) {
       WATCHDOG_NOTICE
     );
     if (!empty($settings['settings']['confirmation_message'])) {
-      $message = $settings['settings']['confirmation_message'];
+      if (module_exists('token')) {
+        $message = token_replace($settings['settings']['confirmation_message'], array(
+          'redhen_donation' => $donation,
+          'redhen_contact' => $contact,
+        ));
+      }
+      else {
+        $message = $settings['settings']['confirmation_message'];
+      }
       drupal_set_message($message);
     }
     if (!empty($settings['settings']['confirmation_page'])) {
