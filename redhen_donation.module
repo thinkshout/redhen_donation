@@ -952,6 +952,16 @@ function redhen_donation_property_redhen_contact_get(RedhenDonation $donation, a
 }
 
 /**
+ * Callback to get $donation->line_item.
+ *
+ * @see RedhenDonationMetadataController::entityPropertyInfo()
+ */
+function redhen_donation_property_line_item_get(RedhenDonation $donation, array $options, $property_name, $entity_type) {
+  $line_item = commerce_line_item_load($donation->line_item_id);
+  return entity_metadata_wrapper('commerce_line_item', $line_item);
+}
+
+/**
  * Getter callback for donation status.
  */
 function redhen_donation_property_status_get(RedhenDonation $donation, array $options, $property_name, $entity_type) {

@@ -17,6 +17,7 @@ class RedhenDonation extends Entity {
   public $entity_type;
   public $author_uid;
   public $contact_id;
+  public $line_item_id;
   public $status;
   public $transaction_entity_type;
   public $transaction_entity_id;

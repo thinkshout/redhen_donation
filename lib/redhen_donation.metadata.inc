@@ -129,6 +129,14 @@ class RedhenDonationMetadataController extends EntityDefaultMetadataController {
       'description' => t("The RedHen contact associated with this donation."),
     );
 
+    $properties['line_item'] = array(
+      'label' => t("Line Item"),
+      'type' => 'commerce_line_item',
+      'schema field' => 'line_item_id',
+      'getter callback' => 'redhen_donation_property_line_item_get',
+      'description' => t("The Commerce Line Item associated with this donation."),
+    );
+
     return $info;
   }
 
