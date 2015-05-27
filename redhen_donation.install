@@ -296,3 +296,35 @@ function redhen_donation_update_7002() {
     }
   }
 }
+
+/**
+ * Add the Line Item ID property to the donation entity table.
+ */
+function redhen_donation_update_7003() {
+  $line_item_id = array(
+    'description' => 'The identifier of the Commerce Line Item this donation is associated with.',
+    'type' => 'int',
+    'not null' => TRUE,
+    'default' => 0,
+  );
+  db_add_field('redhen_donation', 'line_item_id', $line_item_id);
+  $donations = entity_load('redhen_donation');
+  foreach ($donations as $donation) {
+    $wrapper = entity_metadata_wrapper('redhen_donation', $donation);
+    $transaction = $wrapper->transaction_entity->value();
+    if ('commerce_order' == $wrapper->transaction_entity_type->value()) {
+      $order_wrapper = entity_metadata_wrapper('commerce_order', $transaction);
+      foreach ($order_wrapper->commerce_line_items->value() as $line_item) {
+        $donation_type = redhen_donation_type_load($donation->type);
+        if ($line_item->type == $donation_type->settings['commerce_settings']['line_item_type']) {
+          $donation->line_item_id = $line_item->line_item_id;
+          $donation->save();
+          break;
+        }
+      }
+    }
+    else {
+      // @todo: handle cases where transaction entity is "commerce_recurring"
+    }
+  }
+}
