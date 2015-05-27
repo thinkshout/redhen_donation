@@ -27,6 +27,10 @@ function redhen_donation_rules_event_info() {
         'type' => 'commerce_line_item',
         'label' => t('Line Item'),
       ),
+      'commerce_product' => array(
+        'type' => 'commerce_product',
+        'label' => t('Product'),
+      ),
     ),
   );
 
