@@ -942,7 +942,7 @@ function redhen_donation_property_transaction_entity_get(RedhenDonation $donatio
 
 
 /**
- * Callback to get $donation->order.
+ * Callback to get $donation->contact.
  *
  * @see RedhenDonationMetadataController::entityPropertyInfo()
  */
