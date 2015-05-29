@@ -50,6 +50,12 @@ function redhen_donation_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
+      'order_id' => array(
+        'description' => 'The identifier of the Order this donation is associated with.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
       'line_item_id' => array(
         'description' => 'The identifier of the Commerce Line Item this donation is associated with.',
         'type' => 'int',

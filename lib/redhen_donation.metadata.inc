@@ -121,6 +121,14 @@ class RedhenDonationMetadataController extends EntityDefaultMetadataController {
       'description' => t("The order or recurring entity associated with this donation."),
     );
 
+    $properties['order'] = array(
+      'label' => t("Order"),
+      'type' => 'commerce_order',
+      'schema field' => 'order_id',
+      'getter callback' => 'redhen_donation_property_order_get',
+      'description' => t("The order associated with this donation."),
+    );
+
     $properties['contact'] = array(
       'label' => t("RedHen Contact"),
       'type' => 'redhen_contact',

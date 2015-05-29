@@ -940,6 +940,15 @@ function redhen_donation_property_transaction_entity_get(RedhenDonation $donatio
   return entity_metadata_wrapper($donation->transaction_entity_type, $entity);
 }
 
+/**
+ * Callback to get $donation_wrapper->transaction_entity.
+ *
+ * @see RedhenDonationMetadataController::entityPropertyInfo()
+ */
+function redhen_donation_property_order_get(RedhenDonation $donation, array $options, $property_name, $entity_type) {
+  $order = commerce_order_load($donation->order_id);
+  return entity_metadata_wrapper('commerce_order', $order);
+}
 
 /**
  * Callback to get $donation->contact.
