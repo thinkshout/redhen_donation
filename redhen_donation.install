@@ -304,7 +304,7 @@ function redhen_donation_update_7002() {
 }
 
 /**
- * Add the Line Item ID property to the donation entity table.
+ * Add the Line Item ID & Order ID properties to the donation entity table.
  */
 function redhen_donation_update_7003() {
   $line_item_id = array(
@@ -314,23 +314,37 @@ function redhen_donation_update_7003() {
     'default' => 0,
   );
   db_add_field('redhen_donation', 'line_item_id', $line_item_id);
+  $order_id = array(
+    'description' => t('The order associated with this donation.'),
+    'type' => 'int',
+    'not null' => TRUE,
+    'default' => 0,
+  );
+  db_add_field('redhen_donation', 'order_id', $order_id);
   $donations = entity_load('redhen_donation');
   foreach ($donations as $donation) {
     $wrapper = entity_metadata_wrapper('redhen_donation', $donation);
     $transaction = $wrapper->transaction_entity->value();
     if ('commerce_order' == $wrapper->transaction_entity_type->value()) {
       $order_wrapper = entity_metadata_wrapper('commerce_order', $transaction);
+      // Set the Order Property:
+      $donation->order_id = $order_wrapper->order_id->value();
+      // Set the Line Item Property:
       foreach ($order_wrapper->commerce_line_items->value() as $line_item) {
         $donation_type = redhen_donation_type_load($donation->type);
         if ($line_item->type == $donation_type->settings['commerce_settings']['line_item_type']) {
           $donation->line_item_id = $line_item->line_item_id;
-          $donation->save();
           break;
         }
       }
     }
     else {
-      // @todo: handle cases where transaction entity is "commerce_recurring"
+      $wrapper = entity_metadata_wrapper('commerce_recurring', $transaction);
+      $order = reset($wrapper->commerce_recurring_order->value());
+      $donation->order_id = $order->order_id;
+
+      // @todo: handle line item for cases where transaction entity is "commerce_recurring"
     }
+    $donation->save();
   }
 }
