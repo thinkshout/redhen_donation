@@ -85,6 +85,8 @@ function hook_redhen_donation_status_alter($status, $context) {
  *   The default contact as loaded by Redhen Donation.
  * @param User $user
  *   The current user (used to load the relevant contact).
+ * @param RedhenDonationType $donation_type
+ *   The type of Donation being made.
  */
-function hook_redhen_donation_default_contact_alter(&$contact, $user) {
+function hook_redhen_donation_default_contact_alter(&$contact, $user, $donation_type) {
 }

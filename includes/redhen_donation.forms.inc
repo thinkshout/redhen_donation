@@ -417,7 +417,7 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation) {
   $commerce_settings = $donation_type->settings['commerce_settings'];
 
   $contact_object = redhen_contact_load_by_user($user);
-  drupal_alter('redhen_donation_default_contact', $contact_object, $user);
+  drupal_alter('redhen_donation_default_contact', $contact_object, $user, $donation_type);
   if (!$contact_object) {
     $contact_object = redhen_contact_create(array('type' => $contact_settings['contact_type']));
   }
