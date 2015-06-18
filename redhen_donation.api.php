@@ -58,7 +58,7 @@ function hook_redhen_donation_title_alter(&$title, $entity_type, $entity) {
  * Useful for calculating running totals.
  *
  * @param RedhenDonation $donation
- *   Redhen Donation Object
+ *   Redhen Donation Object.
  */
 function hook_redhen_donation_save($donation) {
 }
@@ -67,7 +67,7 @@ function hook_redhen_donation_save($donation) {
  * Provides a way to alter access to the donation status.
  *
  * @param string $status
- *   The current status
+ *   The current status.
  * @param array $context
  *   Contextual information about the item being altered:
  *   - 'entity_type': The host entity type.
@@ -76,4 +76,15 @@ function hook_redhen_donation_save($donation) {
  */
 function hook_redhen_donation_status_alter($status, $context) {
 
+}
+
+/**
+ * Allow overriding of the default contact associated with a Redhen Donation.
+ *
+ * @param RedhenContact $contact
+ *   The default contact as loaded by Redhen Donation.
+ * @param User $user
+ *   The current user (used to load the relevant contact).
+ */
+function hook_redhen_donation_default_contact_alter(&$contact, $user) {
 }
