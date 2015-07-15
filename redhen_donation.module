@@ -1258,7 +1258,7 @@ function redhen_donation_commerce_payment_order_paid_in_full($order, $transactio
     $order_wrapper = entity_metadata_wrapper('commerce_order', $order);
     $recurring_entity = current(commerce_recurring_load_by_order($order));
     $recurring_entity_wrapper = entity_metadata_wrapper('commerce_recurring', $recurring_entity);
-    $recurring_product_wrapper = $recurring_entity_wrapper->commerce_recurring_ref_product->value();
+    $recurring_product_wrapper = $recurring_entity_wrapper->commerce_recurring_ref_product;
     $donation = redhen_donation_load_by_transaction_entity('commerce_recurring', $recurring_entity->id);
 
     // There is no donation associated with this recurring order.
