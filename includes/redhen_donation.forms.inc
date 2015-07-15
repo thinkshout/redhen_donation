@@ -10,15 +10,17 @@
  * @internal object $entity
  *   Donation Entity.
  *
- * @param array $form
+ * @array $form
  *   Form array.
- * @param array $form_state
+ * @array $form_state
  *   Form state array.
- * @param array $settings
+ * @array $settings
  *   Settings array.
- * @param string $entity_type
+ *
+ * @string $entity_type
  *   Host entity type.
- * @param null $entity_id
+ *
+ * @int null $entity_id
  *   Host entity id.
  *
  * @see hook_redhen_donation_entity_settings()
@@ -121,13 +123,15 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
     $form['scheduling']['open']['#date_format'] = 'Y-m-d H:i';
     $form['scheduling']['open']['#description'] = t('When to automatically open donations. (This uses the !timezone, which is !zone.)', array(
       '!timezone' => l(t("site's default time zone"), 'admin/config/regional/settings'),
-      '!zone' => $zonename));
+      '!zone' => $zonename,
+    ));
     unset($form['scheduling']['open']['#maxlength']);
     $form['scheduling']['close']['#type'] = 'date_popup';
     $form['scheduling']['close']['#date_format'] = 'Y-m-d H:i';
     $form['scheduling']['close']['#description'] = t('When to automatically close donations. (This uses the !timezone, which is !zone.)', array(
       '!timezone' => l(t("site's default time zone"), 'admin/config/regional/settings'),
-      '!zone' => $zonename));
+      '!zone' => $zonename,
+    ));
     unset($form['scheduling']['close']['#maxlength']);
   }
 
@@ -224,13 +228,11 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
     '#description' => t('List of allowed donation amounts. Enter one value per line, in the format amount|label. The amount should be entered as an integer value.'),
   );
 
-
   // Use options_element style form if possible.
   if (module_exists('options_element')) {
     // Everything inside this if clause was informed by
     // options_element_form_field_ui_field_settings_form_alter() and
     // _options_element_add_allowed_values_element().
-
     // Get option values or use default set.
     if (isset($form_state['input']['settings']['donation_amounts']['options_field'])) {
       $options = form_options_from_text($form_state['input']['settings']['donation_amounts']['options_field'], 'mixed');
@@ -243,8 +245,8 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
       '#type' => 'options',
       '#options' => $options,
       '#multiple' => FALSE,
-//     Uncomment to expose the toggle that allows users to make "key" optional.
-//      '#key_type_toggle' => t('Custom keys'),
+      // Uncomment to expose the toggle allowing users to make "key" optional.
+      // '#key_type_toggle' => t('Custom keys'),
       '#key_type_toggled' => TRUE,
       '#default_value_allowed' => TRUE,
       '#default_value' => isset($settings['settings']['donation_amounts_default']) ? $settings['settings']['donation_amounts_default'] : '',
@@ -672,7 +674,7 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation) {
   $params = drupal_get_query_parameters();
 
   if (isset($params['amount'])) {
-    //backwards-compatibility for query param donation amounts (100a9f11c6)
+    // Backwards-compatibility for query param donation amounts (100a9f11c6):
     $params['donation'] = $params['amount'];
   }
 
@@ -682,6 +684,8 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation) {
 }
 
 /**
+ * Set defaults based on URL query parameters.
+ *
  * Takes an element array, and recursively sets form default_values on children
  * based on the specified parameters. (This logic carries with it the technical
  * assumption that query parameters passed to a donation form are *supposed* to
@@ -691,24 +695,24 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation) {
  * Note: if there are fields with name collisions, this function will be greedy
  * and set *all* of their values.
  *
- * @param array $form element array
- * @param array $params parameters
+ * @array &$form element array
+ * @array $params parameters
  */
 function redhen_donation_override_form_default_values(&$form, $params) {
   $children = element_children($form);
 
-  foreach($children as $key) {
+  foreach ($children as $key) {
     $form_field = &$form[$key];
 
     $field_keys = array(LANGUAGE_NONE, 0, 'value');
-    foreach($field_keys as $field_key) {
-      if(isset($form_field[$field_key])) {
+    foreach ($field_keys as $field_key) {
+      if (isset($form_field[$field_key])) {
         $form_field = &$form_field[$field_key];
       }
     }
 
-    if(is_array($form_field)) {
-      if(isset($form_field['#type']) && isset($params[$key])) {
+    if (is_array($form_field)) {
+      if (isset($form_field['#type']) && isset($params[$key])) {
         $form_field['#default_value'] = $params[$key];
       }
       redhen_donation_override_form_default_values($form_field, $params);
@@ -726,7 +730,8 @@ function redhen_donation_form_validate($form, &$form_state) {
   $valid_email = valid_email_address($form_state['values']['email']);
   if (!$valid_email) {
     $message = t('"%mail" is not a valid email address', array(
-      '%mail' => $form_state['values']['email'])
+      '%mail' => $form_state['values']['email'],
+      )
     );
     form_set_error('email', $message);
   }
@@ -1031,7 +1036,7 @@ function theme_redhen_donation_payment_options_form_table($variables) {
 /**
  * Payment method selector helper.
  *
- * @param array $form_state
+ * @array $form_state
  *   Form state array.
  *
  * @return array|null
@@ -1067,9 +1072,9 @@ function redhen_donation_get_payment_methods(&$form_state) {
 /**
  * Donation form AJAX callback.
  *
- * @param array $form
+ * @array $form
  *   Form array.
- * @param array $form_state
+ * @array $form_state
  *   Form state array.
  *
  * @return array
