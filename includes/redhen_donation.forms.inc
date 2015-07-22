@@ -910,6 +910,7 @@ function redhen_donation_form_submit($form, &$form_state) {
       $details_values['credit_card']['cardonfile_store'] = TRUE;
       $details_values['credit_card']['default'] = TRUE;
     }
+    commerce_line_item_save($line_item);
 
     $callback($payment_method, $details_form, $details_values, $order, $charge);
     $transaction = entity_load('commerce_payment_transaction', FALSE, array('order_id' => $order->order_id));
@@ -923,7 +924,6 @@ function redhen_donation_form_submit($form, &$form_state) {
     }
     else {
       commerce_order_status_update($order, 'completed', FALSE, TRUE, t('Payment accepted successful.'));
-      commerce_line_item_save($line_item);
     }
   }
 
