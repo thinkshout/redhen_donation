@@ -957,7 +957,12 @@ function redhen_donation_property_order_get(RedhenDonation $donation, array $opt
  */
 function redhen_donation_property_redhen_contact_get(RedhenDonation $donation, array $options, $property_name, $entity_type) {
   $contact = redhen_contact_load($donation->contact_id);
-  return entity_metadata_wrapper('redhen_contact', $contact);
+  if ($contact) {
+    return entity_metadata_wrapper('redhen_contact', $contact);
+  }
+  else {
+    return NULL;
+  }
 }
 
 /**

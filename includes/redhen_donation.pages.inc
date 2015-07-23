@@ -159,11 +159,17 @@ function redhen_donation_donations_page($entity_type, $entity) {
         $transaction_column = 'Transaction Deleted';
       }
       $donation_uri = $donation->uri();
-      $contact_uri = $wrapper->contact->value()->uri();
+      if ($contact = $wrapper->contact->value()) {
+        $contact_uri = $contact->uri();
+        $contact_column = l($wrapper->contact->label(), $contact_uri['path']);
+      }
+      else {
+        $contact_column = t('Contact Deleted');
+      }
       $rows[] = array(
         l($donation->donation_id, $donation_uri['path']),
         $user_col,
-        l($wrapper->contact->label(), $contact_uri['path']),
+        $contact_column,
         $wrapper->pledged->value(),
         $wrapper->received->value(),
         format_date($donation->updated),
