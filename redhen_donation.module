@@ -976,7 +976,10 @@ function redhen_donation_property_line_item_get(RedhenDonation $donation, array 
 function redhen_donation_property_status_get(RedhenDonation $donation, array $options, $property_name, $entity_type) {
   $wrapper = entity_metadata_wrapper('redhen_donation', $donation);
   $transaction_entity = $wrapper->transaction_entity->value();
-  if ($transaction_entity->type == 'commerce_order') {
+  if (!$transaction_entity) {
+    $status = 'Transaction Deleted';
+  }
+  elseif ($transaction_entity->type == 'commerce_order') {
     $status = ucfirst($transaction_entity->status);
   }
   else {

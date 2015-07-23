@@ -156,7 +156,7 @@ function redhen_donation_donations_page($entity_type, $entity) {
         }
       }
       else {
-        $transaction_column = 'Transaction deleted.';
+        $transaction_column = 'Transaction Deleted';
       }
       $donation_uri = $donation->uri();
       $contact_uri = $wrapper->contact->value()->uri();
