@@ -937,7 +937,7 @@ function redhen_donation_property_user_set(RedhenDonation $donation, $name, $val
  */
 function redhen_donation_property_transaction_entity_get(RedhenDonation $donation, array $options, $property_name, $entity_type) {
   $entity = entity_load_single($donation->transaction_entity_type, $donation->transaction_entity_id);
-  return entity_metadata_wrapper($donation->transaction_entity_type, $entity);
+  return $entity ? entity_metadata_wrapper($donation->transaction_entity_type, $entity) : NULL;
 }
 
 /**
