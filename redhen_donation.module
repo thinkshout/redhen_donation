@@ -1288,13 +1288,9 @@ function redhen_donation_commerce_payment_order_paid_in_full($order, $transactio
  * Implements hook_commerce_recurring_uri().
  */
 function redhen_donation_commerce_recurring_uri($recurring_entity) {
+  $path = NULL;
   if (isset($recurring_entity->id)) {
-    $id = $recurring_entity->id . '/edit';
+    $path = 'admin/commerce/recurring-entities/' . $recurring_entity->id . '/edit';
   }
-  else {
-    $id = '%commerce_recurring';
-  }
-  return array(
-    'path' => 'admin/commerce/recurring-entities/' . $id,
-  );
+  return $path;
 }
