@@ -168,7 +168,7 @@ function redhen_donation_type_form($form, &$form_state, $donation_type, $op = 'e
   }
 
   $line_item_type_options = commerce_line_item_type_options_list();
-  if (count($line_item_type_options) > 1) {
+  if (count($line_item_type_options) >= 1) {
     $form['settings']['commerce_settings']['line_item_type'] = array(
       '#type' => 'select',
       '#title' => t('Line item type.'),
