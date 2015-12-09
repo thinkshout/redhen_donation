@@ -523,26 +523,6 @@ function redhen_donation_entity_delete($entity, $entity_type) {
     ->condition('entity_id', $entity_id)
     ->condition('entity_type', $entity_type)
     ->execute();
-
-  // Remove references to a donation_type on host entities.
-  if ($entity_type == 'redhen_donation_type') {
-    $donation_fields = field_read_fields(array('type' => 'redhen_donation'));
-    if (!empty($donation_fields)) {
-      foreach (array_keys($donation_fields) as $field_name) {
-        $query = new EntityFieldQuery();
-        $result = $query
-          ->fieldCondition($field_name, 'redhen_donation_type', $entity->name)
-          ->execute();
-        foreach ($result as $host_entity_type => $entities) {
-          $entities = entity_load($host_entity_type, array_keys($entities));
-          foreach ($entities as $host_entity) {
-            $host_entity->{$field_name}[LANGUAGE_NONE][0] = NULL;
-            entity_save($host_entity_type, $host_entity);
-          }
-        }
-      }
-    }
-  }
 }
 
 /**
