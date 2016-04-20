@@ -5,7 +5,7 @@
  */
 
 /**
- * The class used for model type entities
+ * The class used for model type entities.
  */
 class RedhenDonationType extends Entity {
 

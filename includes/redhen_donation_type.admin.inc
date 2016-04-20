@@ -62,7 +62,7 @@ function redhen_donation_type_form($form, &$form_state, $donation_type, $op = 'e
 
   $form['settings']['contact_settings']['update_fields'] = array(
     '#type' => 'checkbox',
-    '#options' => array(1,1),
+    '#options' => array(1, 1),
     '#title' => t('Update contact fields'),
     '#description' => t('Should the contact fields be updated?'),
     '#default_value' => isset($donation_type->settings['contact_settings']['update_fields']) ? $donation_type->settings['contact_settings']['update_fields'] : NULL,
@@ -274,10 +274,12 @@ function redhen_donation_type_form($form, &$form_state, $donation_type, $op = 'e
     // Todo Note: Submit patch to commerce_payment_example.module to have the payment_method store an array containing a method_id.
     foreach ($rule->actions() as $action) {
       if ($action->settings['payment_method'] == "commerce_payment_example") {
-         $method = $action->settings['payment_method'];
-      } elseif (isset($action->settings['payment_method']['method_id'])) {
+        $method = $action->settings['payment_method'];
+      }
+      elseif (isset($action->settings['payment_method']['method_id'])) {
         $method = $action->settings['payment_method']['method_id'];
-      } else {
+      }
+      else {
         $method = FALSE;
       }
     }
