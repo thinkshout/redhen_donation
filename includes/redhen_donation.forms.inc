@@ -744,12 +744,14 @@ function redhen_donation_form_validate($form, &$form_state) {
   field_attach_form_validate('commerce_commerce_line_item', $donation, $form['line_item'], $form_state);
 
   // Validate 'other' amounts.
-  $donation_amount = $form_state['values']['donation'];
-  if (is_numeric($donation_amount) && $donation_amount > 0) {
-    $form_state['values']['donation'] = commerce_currency_decimal_to_amount($donation_amount, $form_state['currency']);
+  if($form['donation']['#required'] && empty($form_state['values']['donation'])) {
+    form_set_error('donation', t('A donation amount must be entered.'));
+  }
+  else if (!is_numeric($form_state['values']['donation'])) {
+    form_set_error('donation', t('Please enter a numeric donation amount without any text or currency symbols.'));
   }
   else {
-    form_set_error('donation', t('The donation must be entered as a positive number.'));
+    $form_state['values']['donation'] = commerce_currency_decimal_to_amount($form_state['values']['donation'], $form_state['currency']);
   }
 }
 
