@@ -743,6 +743,12 @@ function redhen_donation_form_validate($form, &$form_state) {
   field_attach_form_validate('commerce_customer_profile', $donation, $form['customer_profile'], $form_state);
   field_attach_form_validate('commerce_commerce_line_item', $donation, $form['line_item'], $form_state);
 
+  // Validate the values entered for the credit card details
+  if(isset($form['commerce_payment_form']['payment_details']['credit_card'])) {
+    module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
+    commerce_payment_credit_card_validate($form_state['values']['payment_details']['credit_card'], array('form_parents' => array('payment_details', 'credit_card')));
+  }
+
   // Validate 'other' amounts.
   if($form['donation']['#required'] && empty($form_state['values']['donation'])) {
     form_set_error('donation', t('A donation amount must be entered.'));
