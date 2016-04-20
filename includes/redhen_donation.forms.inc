@@ -743,13 +743,21 @@ function redhen_donation_form_validate($form, &$form_state) {
   field_attach_form_validate('commerce_customer_profile', $donation, $form['customer_profile'], $form_state);
   field_attach_form_validate('commerce_commerce_line_item', $donation, $form['line_item'], $form_state);
 
+  // Validate the values entered for the credit card details
+  if(isset($form['commerce_payment_form']['payment_details']['credit_card'])) {
+    module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
+    commerce_payment_credit_card_validate($form_state['values']['payment_details']['credit_card'], array('form_parents' => array('payment_details', 'credit_card')));
+  }
+
   // Validate 'other' amounts.
-  $donation_amount = $form_state['values']['donation'];
-  if (is_numeric($donation_amount) && $donation_amount > 0) {
-    $form_state['values']['donation'] = commerce_currency_decimal_to_amount($donation_amount, $form_state['currency']);
+  if($form['donation']['#required'] && empty($form_state['values']['donation'])) {
+    form_set_error('donation', t('A donation amount must be entered.'));
+  }
+  else if (!is_numeric($form_state['values']['donation'])) {
+    form_set_error('donation', t('Please enter a numeric donation amount without any text or currency symbols.'));
   }
   else {
-    form_set_error('donation', t('The donation must be entered as a positive number.'));
+    $form_state['values']['donation'] = commerce_currency_decimal_to_amount($form_state['values']['donation'], $form_state['currency']);
   }
 }
 
@@ -888,6 +896,8 @@ function redhen_donation_form_submit($form, &$form_state) {
 
   commerce_customer_profile_save($customer_profile);
   $order_wrapper->commerce_customer_billing = $customer_profile;
+  // Allow other modules to alter the order before it is saved.
+  module_invoke_all('redhen_donation_order_alter', $order_wrapper, $form, $form_state);
   $order_wrapper->save();
   commerce_order_calculate_total($order);
   $order_total = $order_wrapper->commerce_order_total->amount->value();

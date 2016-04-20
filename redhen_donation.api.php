@@ -90,3 +90,18 @@ function hook_redhen_donation_status_alter($status, $context) {
  */
 function hook_redhen_donation_default_contact_alter(&$contact, $user, $donation_type) {
 }
+
+/**
+ * Allow altering the order created by Redhen Donation.
+ *
+ * @param EntityMetadataWrapper $order_wrapper
+ *   The commerce order as an EntityMetadataWrapper.
+ * @param $form
+ *   The Redhen donation form
+ * @param $form_state
+ *   The submitted Redhen donation form
+ */
+function hook_redhen_donation_order_alter($order_wrapper, $form, $form_state) {
+  // Add a item to the order.
+  $order_wrapper->commerce_line_items[] = $line_item;
+}
