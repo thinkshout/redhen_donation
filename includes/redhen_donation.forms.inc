@@ -888,6 +888,8 @@ function redhen_donation_form_submit($form, &$form_state) {
 
   commerce_customer_profile_save($customer_profile);
   $order_wrapper->commerce_customer_billing = $customer_profile;
+  // Allow other modules to alter the order before it is saved.
+  module_invoke_all('redhen_donation_order_alter', $order_wrapper, $form, $form_state);
   $order_wrapper->save();
   commerce_order_calculate_total($order);
   $order_total = $order_wrapper->commerce_order_total->amount->value();
