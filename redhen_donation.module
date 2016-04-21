@@ -185,7 +185,16 @@ function redhen_donation_menu() {
     'file' => 'includes/redhen_donation.pages.inc',
     'type' => MENU_DEFAULT_LOCAL_TASK,
   );
-
+  $items['redhen/donation/%redhen_donation/edit'] = array(
+    'title' => 'Edit',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('redhen_donation_edit_form', 2),
+    'access callback' => 'entity_access',
+    'access arguments' => array('edit', 'redhen_donation', 2),
+    'file' => 'includes/redhen_donation.forms.inc',
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 1,
+  );
   // Entity local tasks.
   foreach (redhen_donation_get_donation_instances() as $instance) {
     $type = $instance['entity_type'];
