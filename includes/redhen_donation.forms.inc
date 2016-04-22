@@ -1291,14 +1291,22 @@ function redhen_donation_add_form($form, &$form_state, $entity_type, $entity) {
   $contact_object = redhen_contact_create(array('type' => $contact_settings['contact_type']));
   $contact_wrapper = entity_metadata_wrapper('redhen_contact', $contact_object);
   $form['redhen_contact'] = array(
+    '#tree' => TRUE,
     '#type' => 'fieldset',
     '#title' => t('Contact Information'),
-    'form' => redhen_contact_contact_form(array(), $form_state, $contact_object),
   );
-  unset($form['redhen_contact']['form']['actions']);
 
-  // Add the donation fields in the same way as when editing an existing donation
-  return redhen_donation_edit_form($form, $form_state, $donation);
+  // Add all the non-# fields from the redhen contact form.
+  $contact_form = redhen_contact_contact_form(array(), $form_state, $contact_object);
+  foreach ($contact_form as $key => $element) {
+    if (substr($key, 0, 1) != '#' && $key != 'actions') {
+      $form['redhen_contact'][$key] = $contact_form[$key];
+    }
+  }
+
+  // Add the donation fields in the same way as when editing existing donations.
+  $form = redhen_donation_edit_form($form, $form_state, $donation);
+  return $form;
 }
 
 /**
