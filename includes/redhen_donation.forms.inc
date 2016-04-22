@@ -1268,6 +1268,56 @@ function redhen_donation_fieldmap_options($entity_type, $entity_bundle = NULL, $
   return $options;
 }
 
+
+/**
+ * Form callback: Create a new donation record outside of the checkout process
+ */
+function redhen_donation_add_form($form, &$form_state, $entity_type, $entity) {
+
+  // TO REFACTOR: Same logic as redhen_donation_donate_page().
+  list($entity_id) = entity_extract_ids($entity_type, $entity);
+  $donation_type = redhen_donation_get_entity_donation_type($entity_type, $entity);
+  $donation = entity_get_controller('redhen_donation')->create(array(
+    'entity_type' => $entity_type,
+    'entity_id' => $entity_id,
+    'type' => $donation_type,
+    'author_uid' => $GLOBALS['user']->uid,
+  ));
+
+  // TO REFACTOR: Nearly the same logic as in redhen_donation_form() to add the contact elements.
+  module_load_include('inc', 'redhen_contact', 'includes/redhen_contact.forms');
+  $donation_type = redhen_donation_type_load($donation->bundle());
+  $contact_settings = $donation_type->settings['contact_settings'];
+  $contact_object = redhen_contact_create(array('type' => $contact_settings['contact_type']));
+  $contact_wrapper = entity_metadata_wrapper('redhen_contact', $contact_object);
+  $form['redhen_contact'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Contact Information'),
+    'form' => redhen_contact_contact_form(array(), $form_state, $contact_object),
+  );
+  unset($form['redhen_contact']['form']['actions']);
+
+  // Add the donation fields in the same way as when editing an existing donation
+  return redhen_donation_edit_form($form, $form_state, $donation);
+}
+
+/**
+ * Validation callback for redhen_donation_add_form().
+ */
+function redhen_donation_add_form_validate($form, &$form_state) {
+  // Allow the edit form validate the fields that it added
+  redhen_donation_edit_form_validate($form, $form_state);
+}
+
+/**
+ * Submit callback for redhen_donation_add_form().
+ */
+function redhen_donation_add_form_submit($form, &$form_state) {
+  // Allow the edit form process the field it added
+  redhen_donation_edit_form_submit($form, $form_state);
+}
+
+
 /**
  * Form callback: edit the field for a donation.
  *

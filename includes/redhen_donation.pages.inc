@@ -138,10 +138,10 @@ function redhen_donation_donations_page($entity_type, $entity) {
         $user_col = t('Anonymous');
       }
 
-      $transaction_entity_wrapper = $wrapper->transaction_entity;
-      $transaction_entity = $transaction_entity_wrapper->value();
-      $transaction_entity_type = $wrapper->transaction_entity_type->value();
-      if ($transaction_entity) {
+      if ($donation->transaction_entity_id) {
+        $transaction_entity_wrapper = $wrapper->transaction_entity;
+        $transaction_entity = $transaction_entity_wrapper->value();
+        $transaction_entity_type = $wrapper->transaction_entity_type->value();
         $transaction_entity_uri = entity_uri($transaction_entity_type, $transaction_entity);
         $transaction_entity_label = entity_label($transaction_entity_type, $transaction_entity);
         if (isset($transaction_entity_uri['path'])) {
