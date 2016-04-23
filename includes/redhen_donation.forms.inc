@@ -1268,9 +1268,8 @@ function redhen_donation_fieldmap_options($entity_type, $entity_bundle = NULL, $
   return $options;
 }
 
-
 /**
- * Form callback: Create a new donation record outside of the checkout process
+ * Form callback: Create a new donation record outside of the checkout process.
  */
 function redhen_donation_add_form($form, &$form_state, $entity_type, $entity) {
 
@@ -1291,7 +1290,7 @@ function redhen_donation_add_form($form, &$form_state, $entity_type, $entity) {
   // Add the donation information edit form.
   $form['redhen_donation'] += redhen_donation_edit_form($form, $form_state, $donation);
 
-  // TO REFACTOR: Nearly the same logic as in redhen_donation_form() to add the contact elements.
+  // TO REFACTOR: Nearly the same logic as in redhen_donation_form().
   module_load_include('inc', 'redhen_contact', 'includes/redhen_contact.forms');
   $donation_type = redhen_donation_type_load($donation->bundle());
   $contact_settings = $donation_type->settings['contact_settings'];
@@ -1311,7 +1310,7 @@ function redhen_donation_add_form($form, &$form_state, $entity_type, $entity) {
       $form['redhen_contact'][$key] = $contact_form[$key];
     }
   }
-  // get the form actions from the donation form
+  // Get the form actions from the donation form.
   $form['actions'] = $form['redhen_donation']['actions'];
   unset($form['redhen_donation']['actions']);
 
@@ -1322,7 +1321,7 @@ function redhen_donation_add_form($form, &$form_state, $entity_type, $entity) {
  * Validation callback for redhen_donation_add_form().
  */
 function redhen_donation_add_form_validate($form, &$form_state) {
-  // Allow the edit form validate the fields that it added
+  // Allow the edit form validate the fields that it added.
   redhen_donation_edit_form_validate($form, $form_state);
 }
 
@@ -1341,8 +1340,11 @@ function redhen_donation_add_form_submit($form, &$form_state) {
   $ret = $contact->upsert();
   $form_state['donation']->contact_id = $form_state['redhen_contact']->contact_id;
 
-  // Allow the edit form process the field it added
+  // Allow the edit form process the fields it added.
   redhen_donation_edit_form_submit($form, $form_state);
+
+  // Redirect back to the donation list after the donation is added.
+  $form_state['redirect'] = str_replace("donations/add", "donations", current_path());
 }
 
 
@@ -1354,19 +1356,19 @@ function redhen_donation_add_form_submit($form, &$form_state) {
  * @param array $form_state
  *   Form state array.
  * @param RedhenDonation $donation
- *   The donation object to edit
+ *   The donation object to edit.
  *
  * @return mixed
  *   Donation form array.
  */
 function redhen_donation_edit_form($form, &$form_state, RedhenDonation $donation) {
-  // Save a reference to the donation
+  // Save a copy of the donation object.
   $form_state['donation'] = $donation;
 
-  // Attach the field api fields for the entity
+  // Attach the field api fields for the entity.
   field_attach_form('redhen_donation', $donation, $form, $form_state);
 
-  // Add the action buttons to the bottom of the form
+  // Add the action buttons to the bottom of the form.
   $form['actions']['#weight'] = 100;
   $form['actions']['submit'] = array(
     '#type' => 'submit',
@@ -1394,7 +1396,7 @@ function redhen_donation_edit_form_submit($form, &$form_state) {
   // Notify field widgets.
   field_attach_submit('redhen_donation', $donation, $form, $form_state);
 
-  if(redhen_donation_save($donation)) {
+  if (redhen_donation_save($donation)) {
     drupal_set_message("The donation details has been saved.");
   }
 }
