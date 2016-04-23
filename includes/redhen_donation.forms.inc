@@ -1365,6 +1365,21 @@ function redhen_donation_edit_form($form, &$form_state, RedhenDonation $donation
   // Save a copy of the donation object.
   $form_state['donation'] = $donation;
 
+  $form['pledged'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Amount Pledged'),
+    '#size' => 10,
+    '#required' => TRUE,
+    '#default_value' => $donation->pledged,
+  );
+  $form['recieved'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Amount Recieved'),
+    '#size' => 10,
+    '#required' => TRUE,
+    '#default_value' => $donation->pledged,
+  );
+
   // Attach the field api fields for the entity.
   field_attach_form('redhen_donation', $donation, $form, $form_state);
 
@@ -1383,6 +1398,12 @@ function redhen_donation_edit_form($form, &$form_state, RedhenDonation $donation
 function redhen_donation_edit_form_validate($form, &$form_state) {
   $donation = $form_state['donation'];
 
+  if (!is_numeric($form_state['values']['pledged'])) {
+    form_set_error('pledged', t('Amount pledged must be a number with no currency symbols or commas.'));
+  }
+  if (!is_numeric($form_state['values']['recieved'])) {
+    form_set_error('recieved', t('Amount recieved must be a number with no currency symbols or commas.'));
+  }
   // Notify field widgets to validate their data.
   field_attach_form_validate('redhen_donation', $donation, $form, $form_state);
 }
@@ -1392,6 +1413,9 @@ function redhen_donation_edit_form_validate($form, &$form_state) {
  */
 function redhen_donation_edit_form_submit($form, &$form_state) {
   $donation = $form_state['donation'];
+
+  $donation->pledged = $form_state['values']['pledged'];
+  $donation->recieved = $form_state['values']['recieved'];
 
   // Notify field widgets.
   field_attach_submit('redhen_donation', $donation, $form, $form_state);
