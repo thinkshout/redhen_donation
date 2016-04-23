@@ -1310,7 +1310,7 @@ function redhen_donation_add_form($form, &$form_state, $entity_type, $entity) {
       $form['redhen_contact'][$key] = $contact_form[$key];
     }
   }
-  // Get the form actions from the donation form.
+  // Move the form actions from the donation form fieldgroup.
   $form['actions'] = $form['redhen_donation']['actions'];
   unset($form['redhen_donation']['actions']);
 
@@ -1346,7 +1346,6 @@ function redhen_donation_add_form_submit($form, &$form_state) {
   // Redirect back to the donation list after the donation is added.
   $form_state['redirect'] = str_replace("donations/add", "donations", current_path());
 }
-
 
 /**
  * Form callback: edit the field for a donation.
