@@ -938,8 +938,10 @@ function redhen_donation_property_user_set(RedhenDonation $donation, $name, $val
  * @see RedhenDonationMetadataController::entityPropertyInfo()
  */
 function redhen_donation_property_transaction_entity_get(RedhenDonation $donation, array $options, $property_name, $entity_type) {
-  $entity = entity_load_single($donation->transaction_entity_type, $donation->transaction_entity_id);
-  return $entity ? entity_metadata_wrapper($donation->transaction_entity_type, $entity) : NULL;
+  if (isset($donation->transaction_entity_type) && isset($donation->transaction_entity_id)) {
+    $entity = entity_load_single($donation->transaction_entity_type, $donation->transaction_entity_id);
+    return $entity ? entity_metadata_wrapper($donation->transaction_entity_type, $entity) : NULL;
+  }
 }
 
 /**
@@ -948,8 +950,10 @@ function redhen_donation_property_transaction_entity_get(RedhenDonation $donatio
  * @see RedhenDonationMetadataController::entityPropertyInfo()
  */
 function redhen_donation_property_order_get(RedhenDonation $donation, array $options, $property_name, $entity_type) {
-  $order = commerce_order_load($donation->order_id);
-  return entity_metadata_wrapper('commerce_order', $order);
+  if (isset($donation->order_id)) {
+    $order = commerce_order_load($donation->order_id);
+    return entity_metadata_wrapper('commerce_order', $order);
+  }
 }
 
 /**
@@ -973,8 +977,10 @@ function redhen_donation_property_redhen_contact_get(RedhenDonation $donation, a
  * @see RedhenDonationMetadataController::entityPropertyInfo()
  */
 function redhen_donation_property_line_item_get(RedhenDonation $donation, array $options, $property_name, $entity_type) {
-  $line_item = commerce_line_item_load($donation->line_item_id);
-  return entity_metadata_wrapper('commerce_line_item', $line_item);
+  if (isset($donation->line_item_id)) {
+    $line_item = commerce_line_item_load($donation->line_item_id);
+    return entity_metadata_wrapper('commerce_line_item', $line_item);
+  }
 }
 
 /**
