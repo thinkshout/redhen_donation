@@ -1293,7 +1293,6 @@ function redhen_donation_add_form($form, &$form_state, $entity_type, $entity) {
 
   $contact_wrapper = entity_metadata_wrapper('redhen_contact', $contact_object);
   $form['redhen_contact'] = array(
-    '#tree' => TRUE,
     '#type' => 'fieldset',
     '#title' => t('Contact Information'),
     '#weight' => -10,
@@ -1325,10 +1324,10 @@ function redhen_donation_add_form_submit($form, &$form_state) {
   // Upsert the redhen contact and include its id in the donation object.
   $contact = $form_state['redhen_contact'];
   $contact->author_uid = $GLOBALS['user']->uid;
-  $contact->first_name = $form_state['values']['redhen_contact']['name']['first_name'];
-  $contact->middle_name = $form_state['values']['redhen_contact']['name']['middle_name'];
-  $contact->last_name = $form_state['values']['redhen_contact']['name']['last_name'];
-  field_attach_submit('redhen_contact', $contact, $form['redhen_contact'], $form_state);
+  $contact->first_name = $form_state['values']['first_name'];
+  $contact->middle_name = $form_state['values']['middle_name'];
+  $contact->last_name = $form_state['values']['last_name'];
+  field_attach_submit('redhen_contact', $contact, $form, $form_state);
   $ret = $contact->upsert();
   $form_state['donation']->contact_id = $form_state['redhen_contact']->contact_id;
 
