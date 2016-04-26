@@ -1282,13 +1282,8 @@ function redhen_donation_add_form($form, &$form_state, $entity_type, $entity) {
     'type' => $donation_type,
     'author_uid' => $GLOBALS['user']->uid,
   ));
-  // Put the donation information into a fieldset.
-  $form['redhen_donation'] = array(
-    '#type' => 'fieldset',
-    '#title' => 'Donation Information',
-  );
   // Add the donation information edit form.
-  $form['redhen_donation'] += redhen_donation_edit_form($form, $form_state, $donation);
+  $form += redhen_donation_edit_form($form, $form_state, $donation);
 
   // TO REFACTOR: Nearly the same logic as in redhen_donation_form().
   module_load_include('inc', 'redhen_contact', 'includes/redhen_contact.forms');
@@ -1301,7 +1296,7 @@ function redhen_donation_add_form($form, &$form_state, $entity_type, $entity) {
     '#tree' => TRUE,
     '#type' => 'fieldset',
     '#title' => t('Contact Information'),
-    '#weight' => -5,
+    '#weight' => -10,
   );
   // Add all the non-# fields from the redhen contact form.
   $contact_form = redhen_contact_contact_form(array(), $form_state, $contact_object);
@@ -1310,9 +1305,6 @@ function redhen_donation_add_form($form, &$form_state, $entity_type, $entity) {
       $form['redhen_contact'][$key] = $contact_form[$key];
     }
   }
-  // Move the form actions from the donation form fieldgroup.
-  $form['actions'] = $form['redhen_donation']['actions'];
-  unset($form['redhen_donation']['actions']);
 
   return $form;
 }
