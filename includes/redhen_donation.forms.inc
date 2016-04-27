@@ -1360,14 +1360,14 @@ function redhen_donation_edit_form($form, &$form_state, RedhenDonation $donation
     '#title' => t('Amount Pledged'),
     '#size' => 10,
     '#required' => TRUE,
-    '#default_value' => number_format($donation->pledged / 100, 2),
+    '#default_value' => number_format($donation->pledged / 100, 2, '.', ''),
   );
   $form['received'] = array(
     '#type' => 'textfield',
     '#title' => t('Amount Received'),
     '#size' => 10,
     '#required' => TRUE,
-    '#default_value' => number_format($donation->received / 100, 2),
+    '#default_value' => number_format($donation->received / 100, 2, '.', ''),
   );
 
   // Attach the field api fields for the entity.
