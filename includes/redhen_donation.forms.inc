@@ -1326,7 +1326,7 @@ function redhen_donation_add_form_submit($form, &$form_state) {
   $contact->author_uid = $GLOBALS['user']->uid;
   $contact->first_name = $form_state['values']['first_name'];
   $contact->middle_name = $form_state['values']['middle_name'];
-  $contact->last_name = $form_state['values']['last_name'];
+  $contact->last_name = $options_element_form_field_ui_field_settings_form_altere['values']['last_name'];
   field_attach_submit('redhen_contact', $contact, $form, $form_state);
   $ret = $contact->upsert();
   $form_state['donation']->contact_id = $form_state['redhen_contact']->contact_id;
@@ -1360,14 +1360,14 @@ function redhen_donation_edit_form($form, &$form_state, RedhenDonation $donation
     '#title' => t('Amount Pledged'),
     '#size' => 10,
     '#required' => TRUE,
-    '#default_value' => $donation->pledged,
+    '#default_value' => number_format($donation->pledged / 100, 2),
   );
   $form['received'] = array(
     '#type' => 'textfield',
     '#title' => t('Amount Received'),
     '#size' => 10,
     '#required' => TRUE,
-    '#default_value' => $donation->received,
+    '#default_value' => number_format($donation->received / 100, 2),
   );
 
   // Attach the field api fields for the entity.
@@ -1389,10 +1389,10 @@ function redhen_donation_edit_form_validate($form, &$form_state) {
   $donation = $form_state['donation'];
 
   if (!is_numeric($form_state['values']['pledged'])) {
-    form_set_error('pledged', t('Amount pledged must be a number with no currency symbols or commas.'));
+    form_set_error('pledged', t('Amount pledged must be a decimal number with no currency symbols or commas.'));
   }
   if (!is_numeric($form_state['values']['received'])) {
-    form_set_error('received', t('Amount received must be a number with no currency symbols or commas.'));
+    form_set_error('received', t('Amount received must be a decimal number with no currency symbols or commas.'));
   }
   // Notify field widgets to validate their data.
   field_attach_form_validate('redhen_donation', $donation, $form, $form_state);
@@ -1404,8 +1404,9 @@ function redhen_donation_edit_form_validate($form, &$form_state) {
 function redhen_donation_edit_form_submit($form, &$form_state) {
   $donation = $form_state['donation'];
 
-  $donation->pledged = $form_state['values']['pledged'];
-  $donation->received = $form_state['values']['received'];
+  // Multiply the donation amount by 100, since it seems that we are storing the value in cents
+  $donation->pledged = $form_state['values']['pledged'] * 100;
+  $donation->received = $form_state['values']['received'] * 100;
 
   // Notify field widgets.
   field_attach_submit('redhen_donation', $donation, $form, $form_state);
