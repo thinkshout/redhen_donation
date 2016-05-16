@@ -1257,3 +1257,56 @@ function redhen_donation_fieldmap_options($entity_type, $entity_bundle = NULL, $
   }
   return $options;
 }
+
+/**
+ * Form callback: edit the field for a donation.
+ *
+ * @param array $form
+ *   Form array.
+ * @param array $form_state
+ *   Form state array.
+ * @param RedhenDonation $donation
+ *   The donation object to edit
+ *
+ * @return mixed
+ *   Donation form array.
+ */
+function redhen_donation_edit_form($form, &$form_state, RedhenDonation $donation) {
+  // Save a reference to the donation
+  $form_state['donation'] = $donation;
+
+  // Attach the field api fields for the entity
+  field_attach_form('redhen_donation', $donation, $form, $form_state);
+
+  // Add the action buttons to the bottom of the form
+  $form['actions']['#weight'] = 100;
+  $form['actions']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save donation'),
+  );
+  return $form;
+}
+
+/**
+ * Validation callback for redhen_donation_edit_form().
+ */
+function redhen_donation_edit_form_validate($form, &$form_state) {
+  $donation = $form_state['donation'];
+
+  // Notify field widgets to validate their data.
+  field_attach_form_validate('redhen_donation', $donation, $form, $form_state);
+}
+
+/**
+ * Submit callback for redhen_donation_edit_form().
+ */
+function redhen_donation_edit_form_submit($form, &$form_state) {
+  $donation = $form_state['donation'];
+
+  // Notify field widgets.
+  field_attach_submit('redhen_donation', $donation, $form, $form_state);
+
+  if (redhen_donation_save($donation)) {
+    drupal_set_message("The donation details has been saved.");
+  }
+}
