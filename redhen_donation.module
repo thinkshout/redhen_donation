@@ -1033,11 +1033,8 @@ function redhen_donation_property_pledged_get(RedhenDonation $donation, array $o
  */
 function redhen_donation_get_formatted_amount(RedhenDonation $donation, $amount_type) {
   $wrapper = entity_metadata_wrapper('redhen_donation', $donation);
-  if($donation->order_id) {
-    $currency_code = $wrapper->order->commerce_order_total->currency_code->value();
-    return commerce_currency_format($donation->$amount_type, $currency_code);
-  }
-  return number_format($donation->$amount_type, 2);
+  $currency_code = $donation->order_id ? $wrapper->order->commerce_order_total->currency_code->value() : commerce_default_currency();
+  return commerce_currency_format($donation->$amount_type, $currency_code);
 }
 
 /**
