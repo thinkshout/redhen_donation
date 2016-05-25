@@ -1309,3 +1309,23 @@ function redhen_donation_commerce_recurring_uri($recurring_entity) {
   }
   return $uri;
 }
+
+/**
+ * Helper function to build a new Donation entity for use in forms.
+ */
+function redhen_donation_initialize_donation($entity, $entity_type, $entity_id = NULL, $author_id = NULL) {
+  if (!$entity_id) {
+    list($entity_id) = entity_extract_ids($entity_type, $entity);
+  }
+  $donation_type = redhen_donation_get_entity_donation_type($entity_type, $entity);
+  $properties = array(
+    'entity_type' => $entity_type,
+    'entity_id' => $entity_id,
+    'type' => $donation_type,
+  );
+  if ($author_id) {
+    $properties['author_uid'] = $author_id;
+  }
+  $donation = entity_get_controller('redhen_donation')->create($properties);
+  return $donation;
+}
