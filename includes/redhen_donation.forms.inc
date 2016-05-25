@@ -1278,7 +1278,7 @@ function redhen_donation_add_form($form, &$form_state, $entity_type, $entity) {
   // Add the donation information edit form.
   $form += redhen_donation_edit_form($form, $form_state, $donation);
 
-  // TO REFACTOR: Nearly the same logic as in redhen_donation_form().
+  // @TODO: Nearly the same logic as in redhen_donation_form().
   module_load_include('inc', 'redhen_contact', 'includes/redhen_contact.forms');
   $donation_type = redhen_donation_type_load($donation->bundle());
   $contact_settings = $donation_type->settings['contact_settings'];
