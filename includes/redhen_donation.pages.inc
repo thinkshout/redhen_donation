@@ -30,12 +30,7 @@ function redhen_donation_donation_title($entity_type, $entity) {
 function redhen_donation_donate_page($entity_type, $entity) {
   list($entity_id) = entity_extract_ids($entity_type, $entity);
   if (redhen_donation_status($entity_type, $entity_id)) {
-    $donation_type = redhen_donation_get_entity_donation_type($entity_type, $entity);
-    $donation = entity_get_controller('redhen_donation')->create(array(
-      'entity_type' => $entity_type,
-      'entity_id' => $entity_id,
-      'type' => $donation_type,
-    ));
+    $donation = redhen_donation_initialize_donation($entity, $entity_type, $entity_id);
     return drupal_get_form('redhen_donation_form', $donation);
   }
   else {

@@ -1273,15 +1273,8 @@ function redhen_donation_fieldmap_options($entity_type, $entity_bundle = NULL, $
  */
 function redhen_donation_add_form($form, &$form_state, $entity_type, $entity) {
 
-  // TO REFACTOR: Same logic as redhen_donation_donate_page().
   list($entity_id) = entity_extract_ids($entity_type, $entity);
-  $donation_type = redhen_donation_get_entity_donation_type($entity_type, $entity);
-  $donation = entity_get_controller('redhen_donation')->create(array(
-    'entity_type' => $entity_type,
-    'entity_id' => $entity_id,
-    'type' => $donation_type,
-    'author_uid' => $GLOBALS['user']->uid,
-  ));
+  $donation = redhen_donation_initialize_donation($entity_type, $entity, $entity_id, $GLOBALS['user']->uid);
   // Add the donation information edit form.
   $form += redhen_donation_edit_form($form, $form_state, $donation);
 
