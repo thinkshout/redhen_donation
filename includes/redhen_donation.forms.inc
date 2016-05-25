@@ -1291,8 +1291,8 @@ function redhen_donation_add_form($form, &$form_state, $entity_type, $entity) {
   );
   // Add all the non-# fields from the redhen contact form.
   $contact_form = redhen_contact_contact_form(array(), $form_state, $contact_object);
-  foreach ($contact_form as $key => $element) {
-    if (substr($key, 0, 1) != '#' && $key != 'actions') {
+  foreach (element_children($contact_form) as $key) {
+    if ($key != 'actions') {
       $form['redhen_contact'][$key] = $contact_form[$key];
     }
   }
