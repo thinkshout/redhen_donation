@@ -53,27 +53,23 @@ function redhen_donation_schema() {
       'order_id' => array(
         'description' => 'The identifier of the Order this donation is associated with.',
         'type' => 'int',
-        'not null' => TRUE,
-        'default' => 0,
+        'not null' => FALSE,
       ),
       'line_item_id' => array(
         'description' => 'The identifier of the Commerce Line Item this donation is associated with.',
         'type' => 'int',
-        'not null' => TRUE,
-        'default' => 0,
+        'not null' => FALSE,
       ),
       'transaction_entity_type' => array(
         'description' => 'The entity type of the transaction (order or recurring) associated with this donation.',
         'type' => 'varchar',
         'length' => 32,
-        'not null' => TRUE,
-        'default' => 0,
+        'not null' => FALSE,
       ),
       'transaction_entity_id' => array(
         'description' => 'The entity id of the transaction associated with this donation.',
         'type' => 'int',
-        'not null' => TRUE,
-        'default' => 0,
+        'not null' => FALSE,
       ),
       'pledged' => array(
         'description' => 'The amount pledged for this donation.',
@@ -105,8 +101,6 @@ function redhen_donation_schema() {
       'donation_author_uid' => array('author_uid'),
       'donation_contact_id' => array('contact_id'),
       'donation_type' => array(array('type', 4)),
-    ),
-    'unique keys' => array(
       'transaction' => array('transaction_entity_type', 'transaction_entity_id'),
     ),
     'foreign keys' => array(
@@ -347,4 +341,33 @@ function redhen_donation_update_7003() {
     }
     $donation->save();
   }
+}
+
+/**
+ * Allow references to commerce orders to be null for redhen_donations.
+ */
+function redhen_donation_update_7004() {
+  db_drop_unique_key('redhen_donation', 'transaction');
+  db_change_field('redhen_donation', 'order_id', 'order_id', array(
+    'description' => 'The identifier of the Order this donation is associated with.',
+    'type' => 'int',
+    'not null' => FALSE,
+  ));
+  db_change_field('redhen_donation', 'line_item_id', 'line_item_id', array(
+    'description' => 'The identifier of the Commerce Line Item this donation is associated with.',
+    'type' => 'int',
+    'not null' => FALSE,
+  ));
+  db_change_field('redhen_donation', 'transaction_entity_type', 'transaction_entity_type', array(
+    'description' => 'The entity type of the transaction (order or recurring) associated with this donation.',
+    'type' => 'varchar',
+    'length' => 32,
+    'not null' => FALSE,
+  ));
+  db_change_field('redhen_donation', 'transaction_entity_id', 'transaction_entity_id', array(
+    'description' => 'The entity id of the transaction associated with this donation.',
+    'type' => 'int',
+    'not null' => FALSE,
+  ));
+  db_add_index('redhen_donation', 'transaction', array('transaction_entity_type', 'transaction_entity_id'));
 }

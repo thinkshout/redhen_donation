@@ -30,12 +30,7 @@ function redhen_donation_donation_title($entity_type, $entity) {
 function redhen_donation_donate_page($entity_type, $entity) {
   list($entity_id) = entity_extract_ids($entity_type, $entity);
   if (redhen_donation_status($entity_type, $entity_id)) {
-    $donation_type = redhen_donation_get_entity_donation_type($entity_type, $entity);
-    $donation = entity_get_controller('redhen_donation')->create(array(
-      'entity_type' => $entity_type,
-      'entity_id' => $entity_id,
-      'type' => $donation_type,
-    ));
+    $donation = redhen_donation_initialize_donation($entity, $entity_type, $entity_id);
     return drupal_get_form('redhen_donation_form', $donation);
   }
   else {
@@ -138,10 +133,10 @@ function redhen_donation_donations_page($entity_type, $entity) {
         $user_col = t('Anonymous');
       }
 
-      $transaction_entity_wrapper = $wrapper->transaction_entity;
-      $transaction_entity = $transaction_entity_wrapper->value();
-      $transaction_entity_type = $wrapper->transaction_entity_type->value();
-      if ($transaction_entity) {
+      if ($donation->transaction_entity_id) {
+        $transaction_entity_wrapper = $wrapper->transaction_entity;
+        $transaction_entity = $transaction_entity_wrapper->value();
+        $transaction_entity_type = $wrapper->transaction_entity_type->value();
         $transaction_entity_uri = entity_uri($transaction_entity_type, $transaction_entity);
         $transaction_entity_label = entity_label($transaction_entity_type, $transaction_entity);
         if (isset($transaction_entity_uri['path'])) {
