@@ -1326,12 +1326,12 @@ function redhen_donation_add_form_submit($form, &$form_state) {
   $contact->author_uid = $GLOBALS['user']->uid;
   $contact->first_name = $form_state['values']['first_name'];
   $contact->middle_name = $form_state['values']['middle_name'];
-  $contact->last_name = $options_element_form_field_ui_field_settings_form_altere['values']['last_name'];
+  $contact->last_name = $form_state['values']['last_name'];
   field_attach_submit('redhen_contact', $contact, $form, $form_state);
-  $ret = $contact->upsert();
+  $contact->upsert();
   $form_state['donation']->contact_id = $form_state['redhen_contact']->contact_id;
 
-  // Allow the edit form process the fields it added.
+  // Allow the edit form to process the fields it added.
   redhen_donation_edit_form_submit($form, $form_state);
 
   // Redirect back to the donation list after the donation is added.
