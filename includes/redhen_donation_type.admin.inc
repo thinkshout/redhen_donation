@@ -339,7 +339,7 @@ function redhen_donation_type_form($form, &$form_state, $donation_type, $op = 'e
       $row['payment_method'] = array(
         '#type' => 'select',
         '#options' => $payment_options,
-        '#default_value' => isset($form_state['methods'][$delta]['payment_method']) ? $form_state['methods'][$delta]['payment_method'] : 0,
+        '#default_value' => isset($form_state['methods'][$delta]['payment_method']) ? $form_state['methods'][$delta]['payment_method'] : isset($donation_type->settings['commerce_settings']['payment_methods'][0]['payment_method']) ? $donation_type->settings['commerce_settings']['payment_methods'][0]['payment_method'] : 0,
       );
       $row['label'] = array(
         '#type' => 'textfield',
