@@ -1284,7 +1284,6 @@ function redhen_donation_add_form($form, &$form_state, $entity_type, $entity) {
   $contact_settings = $donation_type->settings['contact_settings'];
   $contact_object = redhen_contact_create(array('type' => $contact_settings['contact_type']));
 
-  $contact_wrapper = entity_metadata_wrapper('redhen_contact', $contact_object);
   $form['redhen_contact'] = array(
     '#type' => 'fieldset',
     '#title' => t('Contact Information'),
