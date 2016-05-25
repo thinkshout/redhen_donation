@@ -606,9 +606,9 @@ function redhen_donation_update_entity_settings($entity_type, $entity_id, $setti
   // Insert or update donation entity settings.
   db_merge('redhen_donation_entity')
     ->key(array(
-    'entity_id' => $entity_id,
-    'entity_type' => $entity_type,
-  ))
+      'entity_id' => $entity_id,
+      'entity_type' => $entity_type,
+    ))
     ->fields($settings)
     ->execute();
 
@@ -755,8 +755,11 @@ function redhen_donation_status($entity_type, $entity_id, $reset = FALSE, &$erro
  *
  * @string $bookend
  *   "open" or "close"
+ *
  * @array $settings
+ *
  * @entity $entity
+ *
  * @string $entity_type
  *
  * @return int
@@ -1186,7 +1189,7 @@ function redhen_donation_save(RedhenDonation $donation) {
 /**
  * Implements hook_commerce_recurring_recurring_price_alter().
  *
- * see: https://drupal.org/node/2263371
+ * See: https://drupal.org/node/2263371
  */
 function redhen_donation_commerce_recurring_recurring_price_alter(&$recurring_price, $line_item, $recurring_entity) {
   $recurring_wrapper = entity_metadata_wrapper('commerce_recurring', $recurring_entity);

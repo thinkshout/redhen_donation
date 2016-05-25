@@ -62,9 +62,9 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
     '#title' => t('Open Date'),
     '#maxlength' => 25,
     '#description' => t('When to automatically open donations. Format: %time. The date format is YYYY-MM-DD and %timezone is the time zone offset from UTC. Leave blank to disable.', array(
-        '%time' => !empty($settings['open']) ? date_format(date_create($settings['open']), 'Y-m-d H:i:s O') : format_date(time(), 'custom', 'Y-m-d H:i:s O'),
-        '%timezone' => !empty($settings['open']) ? date_format(date_create($settings['open']), 'O') : format_date(time(), 'custom', 'O'),
-      )
+      '%time' => !empty($settings['open']) ? date_format(date_create($settings['open']), 'Y-m-d H:i:s O') : format_date(time(), 'custom', 'Y-m-d H:i:s O'),
+      '%timezone' => !empty($settings['open']) ? date_format(date_create($settings['open']), 'O') : format_date(time(), 'custom', 'O'),
+    )
     ),
     '#default_value' => !empty($settings['open']) ? $settings['open'] : '',
     '#weight' => 2,
@@ -75,9 +75,9 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
     '#title' => t('Close Date'),
     '#maxlength' => 25,
     '#description' => t('When to automatically close donations. Format: %time. The date format is YYYY-MM-DD and %timezone is the time zone offset from UTC. Leave blank to disable.', array(
-        '%time' => !empty($settings['close']) ? date_format(date_create($settings['close']), 'Y-m-d H:i') : format_date(time(), 'custom', 'Y-m-d H:i'),
-        '%timezone' => !empty($settings['close']) ? date_format(date_create($settings['close']), 'O') : format_date(time(), 'custom', 'O'),
-      )
+      '%time' => !empty($settings['close']) ? date_format(date_create($settings['close']), 'Y-m-d H:i') : format_date(time(), 'custom', 'Y-m-d H:i'),
+      '%timezone' => !empty($settings['close']) ? date_format(date_create($settings['close']), 'O') : format_date(time(), 'custom', 'O'),
+    )
     ),
     '#default_value' => !empty($settings['close']) ? $settings['close'] : '',
     '#weight' => 4,
@@ -246,7 +246,7 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
       '#options' => $options,
       '#multiple' => FALSE,
       // Uncomment to expose the toggle allowing users to make "key" optional.
-      // '#key_type_toggle' => t('Custom keys'),
+      // '#key_type_toggle' => t('Custom keys'),.
       '#key_type_toggled' => TRUE,
       '#default_value_allowed' => TRUE,
       '#default_value' => isset($settings['settings']['donation_amounts_default']) ? $settings['settings']['donation_amounts_default'] : '',
@@ -733,7 +733,7 @@ function redhen_donation_form_validate($form, &$form_state) {
   if (!$valid_email) {
     $message = t('"%mail" is not a valid email address', array(
       '%mail' => $form_state['values']['email'],
-      )
+    )
     );
     form_set_error('email', $message);
   }
@@ -743,17 +743,17 @@ function redhen_donation_form_validate($form, &$form_state) {
   field_attach_form_validate('commerce_customer_profile', $donation, $form['customer_profile'], $form_state);
   field_attach_form_validate('commerce_commerce_line_item', $donation, $form['line_item'], $form_state);
 
-  // Validate the values entered for the credit card details
-  if(isset($form['commerce_payment_form']['payment_details']['credit_card'])) {
+  // Validate the values entered for the credit card details.
+  if (isset($form['commerce_payment_form']['payment_details']['credit_card'])) {
     module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
     commerce_payment_credit_card_validate($form_state['values']['payment_details']['credit_card'], array('form_parents' => array('payment_details', 'credit_card')));
   }
 
   // Validate 'other' amounts.
-  if($form['donation']['#required'] && empty($form_state['values']['donation'])) {
+  if ($form['donation']['#required'] && empty($form_state['values']['donation'])) {
     form_set_error('donation', t('A donation amount must be entered.'));
   }
-  else if (!is_numeric($form_state['values']['donation'])) {
+  elseif (!is_numeric($form_state['values']['donation'])) {
     form_set_error('donation', t('Please enter a numeric donation amount without any text or currency symbols.'));
   }
   else {
