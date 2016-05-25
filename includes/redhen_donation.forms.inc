@@ -790,14 +790,44 @@ function redhen_donation_form_submit($form, &$form_state) {
   if ($donation_type->settings['contact_settings']['update_fields'] == 1 || $new_contact) {
     // Save default parameters back into the $contact object.
     $contact->first_name = $form_state['values']['first_name'];
-    $contact->middle_name = $form_state['values']['middle_name'];
     $contact->last_name = $form_state['values']['last_name'];
+    // Middle name can be excluded from the form whereas first and last cannot.
+    // As such, we shouldn't update the middle name if the field isn't present
+    // on the form.
+    $contact->middle_name = empty($form_state['values']['middle_name']) ? $contact_wrapper->middle_name->value() : $form_state['values']['middle_name'];
 
     // Only update if new.
     $contact->author_uid = $new_contact ? $contact->author_uid : $user->uid;
 
     // Notify field widgets.
-    field_attach_submit('redhen_contact', $contact, $form, $form_state);
+    // First name, last name, and email are mandatory - update them.
+    $update_fields = array(
+      'first_name',
+      'last_name',
+      'redhen_email'
+    );
+    // If a Contact address field is selected to sync with the billing profile,
+    // update said field on the Redhen Contact with any changes.
+    if (isset($donation_type->settings['contact_settings']['profile_selector'])) {
+      $update_fields[] = $donation_type->settings['contact_settings']['profile_selector'];
+    }
+    // Only update fields shown on donation form.
+    // This prevents data for all fields not shown on the form getting erased.
+    foreach($donation_type->settings['contact_settings']['fields'] as $contact_field => $update) {
+      if ($update) {
+        $update_fields[] = $contact_field;
+      }
+    }
+
+    // Run field_attach_submit once for each field we want to update rather
+    // than allowing the default behavior of updating all fields in the
+    // entity's bundle.
+    foreach($update_fields as $update_field) {
+      $options = array(
+        'field_name' => $update_field
+      );
+      field_attach_submit('redhen_contact', $contact, $form, $form_state, $options);
+    }
 
     // Set Address field if needed.
     if ($donation_type->settings['contact_settings']['profile_selector'] != 'billing') {
