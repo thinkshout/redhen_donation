@@ -1269,6 +1269,68 @@ function redhen_donation_fieldmap_options($entity_type, $entity_bundle = NULL, $
 }
 
 /**
+ * Form callback: Create a new donation record outside of the checkout process.
+ */
+function redhen_donation_add_form($form, &$form_state, $entity_type, $entity) {
+
+  list($entity_id) = entity_extract_ids($entity_type, $entity);
+  $donation = redhen_donation_initialize_donation($entity_type, $entity, $entity_id, $GLOBALS['user']->uid);
+  // Add the donation information edit form.
+  $form += redhen_donation_edit_form($form, $form_state, $donation);
+
+  // @TODO: Nearly the same logic as in redhen_donation_form().
+  module_load_include('inc', 'redhen_contact', 'includes/redhen_contact.forms');
+  $donation_type = redhen_donation_type_load($donation->bundle());
+  $contact_settings = $donation_type->settings['contact_settings'];
+  $contact_object = redhen_contact_create(array('type' => $contact_settings['contact_type']));
+
+  $form['redhen_contact'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Contact Information'),
+    '#weight' => -10,
+  );
+  // Add all the non-# fields from the redhen contact form.
+  $contact_form = redhen_contact_contact_form(array(), $form_state, $contact_object);
+  foreach (element_children($contact_form) as $key) {
+    if ($key != 'actions') {
+      $form['redhen_contact'][$key] = $contact_form[$key];
+    }
+  }
+
+  return $form;
+}
+
+/**
+ * Validation callback for redhen_donation_add_form().
+ */
+function redhen_donation_add_form_validate($form, &$form_state) {
+  // Allow the edit form validate the fields that it added.
+  redhen_donation_edit_form_validate($form, $form_state);
+}
+
+/**
+ * Submit callback for redhen_donation_add_form().
+ */
+function redhen_donation_add_form_submit($form, &$form_state) {
+
+  // Upsert the redhen contact and include its id in the donation object.
+  $contact = $form_state['redhen_contact'];
+  $contact->author_uid = $GLOBALS['user']->uid;
+  $contact->first_name = $form_state['values']['first_name'];
+  $contact->middle_name = $form_state['values']['middle_name'];
+  $contact->last_name = $form_state['values']['last_name'];
+  field_attach_submit('redhen_contact', $contact, $form, $form_state);
+  $contact->upsert();
+  $form_state['donation']->contact_id = $form_state['redhen_contact']->contact_id;
+
+  // Allow the edit form to process the fields it added.
+  redhen_donation_edit_form_submit($form, $form_state);
+
+  // Redirect back to the donation list after the donation is added.
+  $form_state['redirect'] = str_replace("donations/add", "donations", current_path());
+}
+
+/**
  * Form callback: edit the field for a donation.
  *
  * @param array $form
@@ -1276,7 +1338,7 @@ function redhen_donation_fieldmap_options($entity_type, $entity_bundle = NULL, $
  * @param array $form_state
  *   Form state array.
  * @param RedhenDonation $donation
- *   The donation object to edit
+ *   The donation object to edit.
  *
  * @return mixed
  *   Donation form array.
@@ -1285,10 +1347,25 @@ function redhen_donation_edit_form($form, &$form_state, RedhenDonation $donation
   // Save a reference to the donation
   $form_state['donation'] = $donation;
 
+  $form['pledged'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Amount Pledged'),
+    '#size' => 10,
+    '#required' => TRUE,
+    '#default_value' => number_format($donation->pledged / 100, 2, '.', ''),
+  );
+  $form['received'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Amount Received'),
+    '#size' => 10,
+    '#required' => TRUE,
+    '#default_value' => number_format($donation->received / 100, 2, '.', ''),
+  );
+
   // Attach the field api fields for the entity
   field_attach_form('redhen_donation', $donation, $form, $form_state);
 
-  // Add the action buttons to the bottom of the form
+  // Add the action buttons to the bottom of the form.
   $form['actions']['#weight'] = 100;
   $form['actions']['submit'] = array(
     '#type' => 'submit',
@@ -1303,6 +1380,13 @@ function redhen_donation_edit_form($form, &$form_state, RedhenDonation $donation
 function redhen_donation_edit_form_validate($form, &$form_state) {
   $donation = $form_state['donation'];
 
+  if (!is_numeric($form_state['values']['pledged'])) {
+    form_set_error('pledged', t('Amount pledged must be a decimal number with no currency symbols or commas.'));
+  }
+  if (!is_numeric($form_state['values']['received'])) {
+    form_set_error('received', t('Amount received must be a decimal number with no currency symbols or commas.'));
+  }
+
   // Notify field widgets to validate their data.
   field_attach_form_validate('redhen_donation', $donation, $form, $form_state);
 }
@@ -1312,6 +1396,10 @@ function redhen_donation_edit_form_validate($form, &$form_state) {
  */
 function redhen_donation_edit_form_submit($form, &$form_state) {
   $donation = $form_state['donation'];
+
+  // Multiply the donation amount by 100 to store as total cents.
+  $donation->pledged = $form_state['values']['pledged'] * 100;
+  $donation->received = $form_state['values']['received'] * 100;
 
   // Notify field widgets.
   field_attach_submit('redhen_donation', $donation, $form, $form_state);
