@@ -626,11 +626,19 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation) {
     );
   }
   $billing_user = !is_null($contact_object->uid) ? $contact_object->uid : $user->uid;
-  $billing = commerce_customer_profile_new('billing', $billing_user);
   // Set default contact address.
   if (!(is_null($contact_object->contact_id)) && !empty($contact_settings['profile_selector']) && 'billing' != $contact_settings['profile_selector']) {
+    $billing = commerce_customer_profile_new('billing', $billing_user);
     $billing_address_field = $contact_settings['profile_selector'];
     $billing->commerce_customer_address = $contact_object->{$billing_address_field};
+  }
+  elseif (module_exists('commerce_addressbook') && $billing_user) {
+    if ($default_profile_id = commerce_addressbook_get_default_profile_id($billing_user, 'billing')) {
+      $billing = commerce_customer_profile_load($default_profile_id);
+    }
+  }
+  if (!isset($billing)) {
+    $billing = commerce_customer_profile_new('billing', $billing_user);
   }
   $form['customer_profile'] = array('#weight' => 1);
   field_attach_form('commerce_customer_profile', $billing, $form['customer_profile'], $form_state);
