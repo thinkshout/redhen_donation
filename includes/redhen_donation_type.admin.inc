@@ -116,22 +116,19 @@ function redhen_donation_type_form($form, &$form_state, $donation_type, $op = 'e
       '#prefix' => '<div id="redhen-field-wrapper">',
       '#suffix' => '</div>',
     );
-
-    if ($address_fields) {
-      $address_default = array('billing' => t('None'));
-      $address_fields = array_merge($address_default, $address_fields);
-      $form['settings']['contact_settings']['profile_selector'] = array(
-        '#type' => 'select',
-        '#title' => t('Billing address'),
-        '#options' => $address_fields,
-        '#default_value' => isset($donation_type->settings['contact_settings']['profile_selector']) ? $donation_type->settings['contact_settings']['profile_selector'] : array(),
-        '#description' => t(
-          'Select a contact address field to sync with the billing profile. If "none" is selected, no Contact address fields will be updated with the information provided.'
-        ),
-        '#prefix' => '<div id="redhen-profile-selector-wrapper">',
-        '#suffix' => '</div>',
-      );
-    }
+    $address_default = array('billing' => t('None'));
+    $address_fields = array_merge($address_default, $address_fields);
+    $form['settings']['contact_settings']['profile_selector'] = array(
+      '#type' => 'select',
+      '#title' => t('Billing address'),
+      '#options' => $address_fields,
+      '#default_value' => isset($donation_type->settings['contact_settings']['profile_selector']) ? $donation_type->settings['contact_settings']['profile_selector'] : array(),
+      '#description' => t(
+        'Select a contact address field to sync with the billing profile. If "none" is selected, no Contact address fields will be updated with the information provided.'
+      ),
+      '#prefix' => '<div id="redhen-profile-selector-wrapper">',
+      '#suffix' => '</div>',
+    );
   }
 
   $form['settings']['commerce_settings'] = array(
