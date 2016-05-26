@@ -838,8 +838,8 @@ function redhen_donation_form_submit($form, &$form_state) {
     }
 
     // Set Address field if needed.
-    if ($donation_type->settings['contact_settings']['profile_selector'] != 'billing') {
-      $sync_field = $donation_type->settings['contact_settings']['profile_selector'];
+    if (!empty($donation_type->settings['contact_settings']['profile_selector']) &&
+      $donation_type->settings['contact_settings']['profile_selector'] != 'billing') {
       $contact_address = array();
       if (!empty($contact_wrapper->{$sync_field})) {
         // The wrapper can be set, but the value equal to null in some cases.
@@ -852,6 +852,7 @@ function redhen_donation_form_submit($form, &$form_state) {
       $billing_address = $form_state['values']['commerce_customer_address'][LANGUAGE_NONE][0];
       $updated_address = array_merge($contact_address, $billing_address);
       $contact_wrapper->{$sync_field}->set($updated_address);
+
     }
 
     // Set email address.
