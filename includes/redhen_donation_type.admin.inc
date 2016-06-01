@@ -93,7 +93,7 @@ function redhen_donation_type_form($form, &$form_state, $donation_type, $op = 'e
     $fields = field_info_instances('redhen_contact', $contact_type);
 
     $other_fields = array();
-    $address_fields = NULL;
+    $address_fields = array();
     foreach ($fields as $field_name => $field) {
       $field_info = field_info_field($field_name);
       if ($field_info['type'] == 'addressfield') {
@@ -122,7 +122,7 @@ function redhen_donation_type_form($form, &$form_state, $donation_type, $op = 'e
       '#type' => 'select',
       '#title' => t('Billing address'),
       '#options' => $address_fields,
-      '#default_value' => isset($donation_type->settings['contact_settings']['profile_selector']) ? $donation_type->settings['contact_settings']['profile_selector'] : array(),
+      '#default_value' => isset($donation_type->settings['contact_settings']['profile_selector']) ? $donation_type->settings['contact_settings']['profile_selector'] : 'billing',
       '#description' => t(
         'Select a contact address field to sync with the billing profile. If "none" is selected, no Contact address fields will be updated with the information provided.'
       ),
