@@ -1313,7 +1313,7 @@ function redhen_donation_fieldmap_options($entity_type, $entity_bundle = NULL, $
 function redhen_donation_add_form($form, &$form_state, $entity_type, $entity) {
 
   list($entity_id) = entity_extract_ids($entity_type, $entity);
-  $donation = redhen_donation_initialize_donation($entity_type, $entity, $entity_id, $GLOBALS['user']->uid);
+  $donation = redhen_donation_initialize_donation($entity, $entity_type, $entity_id, $GLOBALS['user']->uid);
   // Add the donation information edit form.
   $form += redhen_donation_edit_form($form, $form_state, $donation);
 
