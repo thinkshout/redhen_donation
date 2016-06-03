@@ -431,6 +431,7 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation) {
   $form['redhen_contact'] = array(
     '#type' => 'fieldset',
     '#title' => t('Contact Information'),
+    '#weight' => -5,
     'form' => redhen_contact_contact_form(array(), $form_state, $contact_object),
   );
 
@@ -575,7 +576,8 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation) {
       );
       break;
   }
-  $form['line_item'] = array('#weight' => 0);
+  $form['donation']['#weight'] = $form['redhen_contact']['#weight'] + 1;
+  $form['line_item'] = array('#weight' => $form['redhen_contact']['#weight'] + 2);
   $line_item = commerce_line_item_new($donation_type->settings['commerce_settings']['line_item_type']);
   field_attach_form('commerce_line_item', $line_item, $form['line_item'], $form_state);
   $line_item_fields = field_info_instances('commerce_line_item', $donation_type->settings['commerce_settings']['line_item_type']);
@@ -612,6 +614,7 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation) {
       '#type' => 'radios',
       '#title' => $product_label,
       '#options' => $product_list,
+      '#weight' => $form['redhen_contact']['#weight'] + 3,
       '#required' => TRUE,
     );
     foreach ($form['product']['#options'] as $key => $label) {
@@ -640,7 +643,7 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation) {
   if (!isset($billing)) {
     $billing = commerce_customer_profile_new('billing', $billing_user);
   }
-  $form['customer_profile'] = array('#weight' => 1);
+  $form['customer_profile'] = array('#weight' => 49);
   field_attach_form('commerce_customer_profile', $billing, $form['customer_profile'], $form_state);
   $form['customer_profile']['commerce_customer_address'][LANGUAGE_NONE][0]['name_block']['#access'] = FALSE;
   $form['customer_profile']['commerce_customer_address'][LANGUAGE_NONE][0]['#title'] = t('Billing address');
