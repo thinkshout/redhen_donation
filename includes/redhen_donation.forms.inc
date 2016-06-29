@@ -400,10 +400,10 @@ function redhen_donation_entity_settings_form_submit($form, &$form_state) {
  * @return mixed
  *   Donation form array.
  */
-function redhen_donation_form($form, &$form_state, RedhenDonation $donation) {
+function redhen_donation_form($form, &$form_state, RedhenDonation $donation, $use_cart = FALSE) {
   global $user;
   $form_state['donation'] = $donation;
-
+  $form_state['use_cart'] = $use_cart;
   if (!isset($form_state['#donation_settings'])) {
     $form_state['donation_settings']
       = $settings
@@ -628,61 +628,63 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation) {
       '#value' => $product->product_id,
     );
   }
-  $billing_user = !is_null($contact_object->uid) ? $contact_object->uid : $user->uid;
-  // Set default contact address.
-  if (!(is_null($contact_object->contact_id)) && !empty($contact_settings['profile_selector']) && 'billing' != $contact_settings['profile_selector']) {
-    $billing = commerce_customer_profile_new('billing', $billing_user);
-    $billing_address_field = $contact_settings['profile_selector'];
-    $billing->commerce_customer_address = $contact_object->{$billing_address_field};
-  }
-  elseif (module_exists('commerce_addressbook') && $billing_user) {
-    if ($default_profile_id = commerce_addressbook_get_default_profile_id($billing_user, 'billing')) {
-      $billing = commerce_customer_profile_load($default_profile_id);
+  if (!$form_state['use_cart']) {
+    $billing_user = !is_null($contact_object->uid) ? $contact_object->uid : $user->uid;
+    // Set default contact address.
+    if (!(is_null($contact_object->contact_id)) && !empty($contact_settings['profile_selector']) && 'billing' != $contact_settings['profile_selector']) {
+      $billing = commerce_customer_profile_new('billing', $billing_user);
+      $billing_address_field = $contact_settings['profile_selector'];
+      $billing->commerce_customer_address = $contact_object->{$billing_address_field};
     }
+    elseif (module_exists('commerce_addressbook') && $billing_user) {
+      if ($default_profile_id = commerce_addressbook_get_default_profile_id($billing_user, 'billing')) {
+        $billing = commerce_customer_profile_load($default_profile_id);
+      }
+    }
+    if (!isset($billing)) {
+      $billing = commerce_customer_profile_new('billing', $billing_user);
+    }
+    $form['customer_profile'] = array('#weight' => 49);
+    field_attach_form('commerce_customer_profile', $billing, $form['customer_profile'], $form_state);
+    $form['customer_profile']['commerce_customer_address'][LANGUAGE_NONE][0]['name_block']['#access'] = FALSE;
+    $form['customer_profile']['commerce_customer_address'][LANGUAGE_NONE][0]['#title'] = t('Billing address');
+    $form['customer_profile']['commerce_customer_address']['#weight'] = 49;
+
+    if (isset($form_state['values'])) {
+      $default_method = $form_state['values']['payment_method'];
+    }
+    else {
+      reset($options);
+      $default_method = key($options);
+    }
+
+    // Set the default value for the payment method radios.
+    $pane_form['payment_method']['#default_value'] = $default_method;
+
+    $payment_method = $payment_methods[$default_method];
+
+    $checkout_pane = array();
+    $order = new stdClass();
+    $pane_values = array();
+    if ($callback = commerce_payment_method_callback($payment_method, 'submit_form')) {
+      $pane_form['payment_details'] = $callback($payment_method, $pane_values, $checkout_pane, $order);
+    }
+    else {
+      $pane_form['payment_details'] = array();
+    }
+
+    $pane_form['payment_details']['#tree'] = TRUE;
+    $pane_form['payment_details']['#prefix'] = '<div id="payment-details">';
+    $pane_form['payment_details']['#suffix'] = '</div>';
+
+    $form['commerce_payment_form'] = array(
+      '#type' => 'fieldset',
+      '#weight' => 50,
+      '#title' => t('Payment Information'),
+    );
+
+    $form['commerce_payment_form'] = array_merge($form['commerce_payment_form'], $pane_form);
   }
-  if (!isset($billing)) {
-    $billing = commerce_customer_profile_new('billing', $billing_user);
-  }
-  $form['customer_profile'] = array('#weight' => 49);
-  field_attach_form('commerce_customer_profile', $billing, $form['customer_profile'], $form_state);
-  $form['customer_profile']['commerce_customer_address'][LANGUAGE_NONE][0]['name_block']['#access'] = FALSE;
-  $form['customer_profile']['commerce_customer_address'][LANGUAGE_NONE][0]['#title'] = t('Billing address');
-  $form['customer_profile']['commerce_customer_address']['#weight'] = 49;
-
-  if (isset($form_state['values'])) {
-    $default_method = $form_state['values']['payment_method'];
-  }
-  else {
-    reset($options);
-    $default_method = key($options);
-  }
-
-  // Set the default value for the payment method radios.
-  $pane_form['payment_method']['#default_value'] = $default_method;
-
-  $payment_method = $payment_methods[$default_method];
-
-  $checkout_pane = array();
-  $order = new stdClass();
-  $pane_values = array();
-  if ($callback = commerce_payment_method_callback($payment_method, 'submit_form')) {
-    $pane_form['payment_details'] = $callback($payment_method, $pane_values, $checkout_pane, $order);
-  }
-  else {
-    $pane_form['payment_details'] = array();
-  }
-
-  $pane_form['payment_details']['#tree'] = TRUE;
-  $pane_form['payment_details']['#prefix'] = '<div id="payment-details">';
-  $pane_form['payment_details']['#suffix'] = '</div>';
-
-  $form['commerce_payment_form'] = array(
-    '#type' => 'fieldset',
-    '#weight' => 50,
-    '#title' => t('Payment Information'),
-  );
-
-  $form['commerce_payment_form'] = array_merge($form['commerce_payment_form'], $pane_form);
 
   $params = drupal_get_query_parameters();
 
@@ -751,15 +753,20 @@ function redhen_donation_form_validate($form, &$form_state) {
 
   // Notify field widgets to validate their data.
   field_attach_form_validate('redhen_donation', $donation, $form, $form_state);
-  field_attach_form_validate('commerce_customer_profile', $donation, $form['customer_profile'], $form_state);
   field_attach_form_validate('commerce_commerce_line_item', $donation, $form['line_item'], $form_state);
-
-  // Validate the values entered for the credit card details
-  if(isset($form['commerce_payment_form']['payment_details']['credit_card'])) {
-    module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
-    commerce_payment_credit_card_validate($form_state['values']['payment_details']['credit_card'], array('form_parents' => array('payment_details', 'credit_card')));
+  if (!$form_state['use_cart']) {
+    field_attach_form_validate('commerce_customer_profile', $donation, $form['customer_profile'], $form_state);
+    // Validate the values entered for the credit card details
+    if (isset($form['commerce_payment_form']['payment_details']['credit_card'])) {
+      module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
+      commerce_payment_credit_card_validate($form_state['values']['payment_details']['credit_card'], array(
+        'form_parents' => array(
+          'payment_details',
+          'credit_card'
+        )
+      ));
+    }
   }
-
   // Validate 'other' amounts.
   if($form['donation']['#required'] && empty($form_state['values']['donation'])) {
     form_set_error('donation', t('A donation amount must be entered.'));
@@ -913,11 +920,25 @@ function redhen_donation_form_submit($form, &$form_state) {
       $donation_type->settings['commerce_settings']['line_item_type'] :
       'product';
   $uid = isset($donation_user->uid) ? $donation_user->uid : 0;
-  $order = commerce_cart_order_new($uid, $order_type);
-  if (empty($order->mail)) {
-    $order->mail = $contact_wrapper->email->value();
+  if ($form_state['use_cart']) {
+    // Allow dictating of a specific order by donation creator:
+    if (isset($form_state['redhen_donation_order_override'])) {
+      $order = $form_state['redhen_donation_order_override'];
+    }
+    else {
+      // Otherwise attempt to load the customer's shopping cart order.
+      $order = commerce_cart_order_load($uid);
+    }
   }
-  commerce_order_save($order);
+  // If no order existed, create one now.
+  if (empty($order)) {
+    $order = commerce_cart_order_new($uid, $order_type);
+    $order->data['last_cart_refresh'] = REQUEST_TIME;
+    if (empty($order->mail)) {
+      $order->mail = $contact_wrapper->email->value();
+    }
+    commerce_order_save($order);
+  }
   $order_wrapper = entity_metadata_wrapper('commerce_order', $order);
   $line_item = commerce_product_line_item_new($product, 1, $order->order_id, array(), $line_item_type);
   field_attach_submit('commerce_line_item', $line_item, $form['line_item'], $form_state);
@@ -930,57 +951,61 @@ function redhen_donation_form_submit($form, &$form_state) {
   // Add the item to the list of line items.
   $order_wrapper->commerce_line_items[] = $line_item;
 
-  $customer_profile = commerce_customer_profile_new('billing', $uid);
-  $customer_profile->commerce_customer_address[LANGUAGE_NONE][0] = array();
-  $billing_address =& $customer_profile->commerce_customer_address[LANGUAGE_NONE][0];
-  $form_state['values']['commerce_customer_address']['und'][0]['name_line'] = $form_state['values']['first_name'] . ' ' . $form_state['values']['last_name'];
-  $billing_address = array_merge($billing_address, $form_state['values']['commerce_customer_address'][LANGUAGE_NONE][0]);
+  if (!$form_state['use_cart']) {
+    $customer_profile = commerce_customer_profile_new('billing', $uid);
+    $customer_profile->commerce_customer_address[LANGUAGE_NONE][0] = array();
+    $billing_address =& $customer_profile->commerce_customer_address[LANGUAGE_NONE][0];
+    $form_state['values']['commerce_customer_address']['und'][0]['name_line'] = $form_state['values']['first_name'] . ' ' . $form_state['values']['last_name'];
+    $billing_address = array_merge($billing_address, $form_state['values']['commerce_customer_address'][LANGUAGE_NONE][0]);
 
-  commerce_customer_profile_save($customer_profile);
-  $order_wrapper->commerce_customer_billing = $customer_profile;
+    commerce_customer_profile_save($customer_profile);
+    $order_wrapper->commerce_customer_billing = $customer_profile;
+  }
   // Allow other modules to alter the order before it is saved.
   module_invoke_all('redhen_donation_order_alter', $order_wrapper, $form, $form_state);
   $order_wrapper->save();
   commerce_order_calculate_total($order);
-  $order_total = $order_wrapper->commerce_order_total->amount->value();
 
-  // Now we can process the payment at last.
-  $payment_method = commerce_payment_method_instance_load($form_state['values']['payment_method']);
-  // Delegate submit to the payment method callback.
-  if ($callback = commerce_payment_method_callback($payment_method, 'submit_form_submit')) {
-    $charge = array(
-      'amount' => $order_total,
-      'currency_code' => $currency,
-    );
-    // Payment method form.
-    $details_form = !empty($form['commerce_payment_form']['payment_details']) ? $form['commerce_payment_form']['payment_details'] : array();
-    // Payment method values.
-    $details_values = !empty($form_state['values']['payment_details']) ? $form_state['values']['payment_details'] : $form_state['input']['payment_details'];
+  if (!$form_state['use_cart']) {
+    $order_total = $order_wrapper->commerce_order_total->amount->value();
 
-    // If recurring, we need a stored card on file for future transactions.
-    if ($recurring_product) {
-      $details_values['cardonfile_instance_default'] = TRUE;
-      $details_values['cardonfile'] = 'new';
-      $details_values['credit_card']['cardonfile_store'] = TRUE;
-      $details_values['credit_card']['default'] = TRUE;
-    }
-    commerce_line_item_save($line_item);
+    // Now we can process the payment at last.
+    $payment_method = commerce_payment_method_instance_load($form_state['values']['payment_method']);
+    // Delegate submit to the payment method callback.
+    if ($callback = commerce_payment_method_callback($payment_method, 'submit_form_submit')) {
+      $charge = array(
+        'amount' => $order_total,
+        'currency_code' => $currency,
+      );
+      // Payment method form.
+      $details_form = !empty($form['commerce_payment_form']['payment_details']) ? $form['commerce_payment_form']['payment_details'] : array();
+      // Payment method values.
+      $details_values = !empty($form_state['values']['payment_details']) ? $form_state['values']['payment_details'] : $form_state['input']['payment_details'];
 
-    $callback($payment_method, $details_form, $details_values, $order, $charge);
-    $transaction = entity_load('commerce_payment_transaction', FALSE, array('order_id' => $order->order_id));
-    $transaction = current($transaction);
-    if ($transaction->status != 'success') {
-      commerce_order_status_update($order, 'canceled', FALSE, TRUE, t('Payment declined: @message'), array('@message' => $transaction->message));
-      drupal_set_message(t('There was a problem with your payment: @message', array('@message' => $transaction->message)), 'error');
-      // This preserves the form state if a user wants to resubmit.
-      $form_state['redirect'] = FALSE;
-      return FALSE;
-    }
-    else {
-      commerce_order_status_update($order, 'completed', FALSE, TRUE, t('Payment accepted successful.'));
+      // If recurring, we need a stored card on file for future transactions.
+      if ($recurring_product) {
+        $details_values['cardonfile_instance_default'] = TRUE;
+        $details_values['cardonfile'] = 'new';
+        $details_values['credit_card']['cardonfile_store'] = TRUE;
+        $details_values['credit_card']['default'] = TRUE;
+      }
+      commerce_line_item_save($line_item);
+
+      $callback($payment_method, $details_form, $details_values, $order, $charge);
+      $transaction = entity_load('commerce_payment_transaction', FALSE, array('order_id' => $order->order_id));
+      $transaction = current($transaction);
+      if ($transaction->status != 'success') {
+        commerce_order_status_update($order, 'canceled', FALSE, TRUE, t('Payment declined: @message'), array('@message' => $transaction->message));
+        drupal_set_message(t('There was a problem with your payment: @message', array('@message' => $transaction->message)), 'error');
+        // This preserves the form state if a user wants to resubmit.
+        $form_state['redirect'] = FALSE;
+        return FALSE;
+      }
+      else {
+        commerce_order_status_update($order, 'completed', FALSE, TRUE, t('Payment accepted successful.'));
+      }
     }
   }
-
   // Donation entity handling.
   $donation->author_uid = $user->uid;
   $donation->contact_id = $contact->contact_id;
@@ -1023,12 +1048,10 @@ function redhen_donation_form_submit($form, &$form_state) {
       }
       drupal_set_message($message);
     }
-    if (!empty($settings['settings']['confirmation_page'])) {
-      $form_state['redirect'] = array($settings['settings']['confirmation_page']);
-    }
-    else {
-      $host_entity = entity_metadata_wrapper($settings['entity_type'], $settings['entity_id']);
-      $form_state['redirect'] = array($host_entity->url->value());
+    if (!isset($form_state['redirect'])) {
+      if (!empty($settings['settings']['confirmation_page'])) {
+        $form_state['redirect'] = array($settings['settings']['confirmation_page']);
+      }
     }
     rules_invoke_event('redhen_donation_donation_completed', $donation, $transaction, $line_item, $product);
   }
