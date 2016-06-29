@@ -155,6 +155,9 @@ function redhen_donation_field_formatter_info() {
     'redhen_donation_form' => array(
       'label' => t('Donation Form'),
       'field types' => array('redhen_donation'),
+      'settings' => array(
+        'use_cart' => FALSE,
+      ),
     ),
   );
 }
@@ -179,6 +182,15 @@ function redhen_donation_field_formatter_settings_form($field, $instance, $view_
     );
   }
 
+  if ($display['type'] == 'redhen_donation_form') {
+    $element['use_cart'] = array(
+      '#title' => t('Use Cart'),
+      '#type' => 'checkbox',
+      '#default_value' => $settings['use_cart'],
+      '#description' => t("Enabling this option will remove payment information from the form, and instead of immediately processing the donation it will be added to the user's cart."),
+    );
+  }
+
   return $element;
 }
 
@@ -193,10 +205,18 @@ function redhen_donation_field_formatter_settings_summary($field, $instance, $vi
 
   if ($display['type'] == 'redhen_donation_default' || $display['type'] == 'redhen_donation_link') {
     if (!empty($settings['label'])) {
-      $summary = t('Donation label: @label.', array('@label' => $settings['label']));
+      $summary .= t('Donation label: @label.', array('@label' => $settings['label']));
     }
     else {
-      $summary = t('Donation label: Parent label.');
+      $summary .= t('Donation label: Parent label.');
+    }
+  }
+  if ($display['type'] == 'redhen_donation_form') {
+    if (!empty($settings['use_cart'])) {
+      $summary .= t('Use Cart');
+    }
+    else {
+      $summary .= t('Single-page Processing');
     }
   }
 
@@ -245,7 +265,8 @@ function redhen_donation_field_formatter_view($entity_type, $entity, $field, $in
             'entity_id' => $entity_id,
             'type' => $donation_type->name,
           ));
-          $element[0] = drupal_get_form('redhen_donation_form', $donation);
+          $use_cart = isset($display['settings']['use_cart']) ? $display['settings']['use_cart'] : FALSE;
+          $element[0] = drupal_get_form('redhen_donation_form', $donation, $use_cart);
         }
         break;
     }
