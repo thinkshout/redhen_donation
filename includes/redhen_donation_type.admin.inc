@@ -139,7 +139,13 @@ function redhen_donation_type_form($form, &$form_state, $donation_type, $op = 'e
   );
 
   $product_types = commerce_product_type_options_list();
-  unset($product_types['recurring']);
+  // Recurring product types can be identified by having the recurring fields
+  // attached to them.
+  $rec_price_info = field_info_field('commerce_recurring_rec_price');
+  $recurring_product_types = $rec_price_info['bundles']['commerce_product'];
+  foreach ($recurring_product_types as $rec_type) {
+    unset($product_types[$rec_type]);
+  }
   $form['settings']['commerce_settings']['one_time_product_type'] = array(
     '#title' => t('One time product type'),
     '#type' => 'select',
@@ -194,10 +200,6 @@ function redhen_donation_type_form($form, &$form_state, $donation_type, $op = 'e
     // Product options.
     $product_options = array('' => t('None'));
     $rec_product_options = array();
-    // Recurring product types can be identified by having the recurring fields
-    // attached to them.
-    $rec_price_info = field_info_field('commerce_recurring_rec_price');
-    $recurring_product_types = $rec_price_info['bundles']['commerce_product'];
     $query = new EntityFieldQuery();
     $query->entityCondition('entity_type', 'commerce_product')
       ->propertyCondition('status', 1)
