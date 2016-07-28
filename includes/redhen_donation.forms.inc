@@ -588,24 +588,29 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation, $us
   }
 
   // Load Commerce products based on the donation type settings.
-  $product_ids = array($commerce_settings['product_options']['one_time_product']);
+  $product_skus = array($commerce_settings['product_options']['one_time_product']);
   if (isset($commerce_settings['product_options']['recurring'])) {
-    $product_ids = array_merge(
+    $product_skus = array_merge(
       array(
         $commerce_settings['product_options']['one_time_product'],
       ),
       $commerce_settings['product_options']['recurring']
     );
   }
-  $products = commerce_product_load_multiple($product_ids);
+  $products = array();
+  foreach ($product_skus as $sku) {
+    if ($sku) {
+      $products[$sku] = commerce_product_load_by_sku($sku);
+    }
+  }
 
   if (count($products) > 1) {
     $descriptions = array();
     $product_list = array();
-    foreach ($products as $product_id => $product) {
+    foreach ($products as $product_sku => $product) {
       $product_wrapper = entity_metadata_wrapper('commerce_product', $product);
-      $product_list[$product_id] = $product->title;
-      $descriptions[$product_id] = redhen_donation_product_description($product_wrapper);
+      $product_list[$product_sku] = $product->title;
+      $descriptions[$product_sku] = redhen_donation_product_description($product_wrapper);
     }
     $product_label = $commerce_settings['product_options']['product_select_label'] == "" ?
       t('Donation Type') :
@@ -874,8 +879,8 @@ function redhen_donation_form_submit($form, &$form_state) {
   }
 
   // Load product.
-  $product_id = $values['product'];
-  $product = commerce_product_load($product_id);
+  $product_sku = $values['product'];
+  $product = commerce_product_load_by_sku($product_sku);
   $product_wrapper = entity_metadata_wrapper('commerce_product', $product);
   $recurring_product = commerce_recurring_product_is_recurring($product);
 

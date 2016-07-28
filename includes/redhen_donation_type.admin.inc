@@ -216,14 +216,14 @@ function redhen_donation_type_form($form, &$form_state, $donation_type, $op = 'e
     else {
       $products = commerce_product_load_multiple(array_keys($result['commerce_product']));
       $rec_product_description = array();
-      foreach ($products as $id => $product) {
+      foreach ($products as $product) {
         if (in_array($product->type, $recurring_product_types)) {
           $product_wrapper = entity_metadata_wrapper('commerce_product', $product);
-          $rec_product_options[$id] = $product->title;
-          $rec_product_description[$id] = redhen_donation_product_description($product_wrapper);
+          $rec_product_options[$product->sku] = $product->title;
+          $rec_product_description[$product->sku] = redhen_donation_product_description($product_wrapper);
         }
         else {
-          $product_options[$id] = $product->title;
+          $product_options[$product->sku] = $product->title;
         }
       }
     }
