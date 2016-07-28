@@ -1329,3 +1329,24 @@ function redhen_donation_initialize_donation($entity, $entity_type, $entity_id =
   $donation = entity_get_controller('redhen_donation')->create($properties);
   return $donation;
 }
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * When editing a product that is in use by a Donation Type, warn the editor to
+ * take care in editing the SKU.
+ */
+function redhen_donation_form_commerce_product_ui_product_form_alter(&$form, &$form_state, $form_id) {
+  if (isset($form['#entity']->sku)) {
+    foreach (redhen_donation_get_types() as $type) {
+      $skus_used = $type->settings['commerce_settings']['product_options']['recurring'];
+      $skus_used[] = $type->settings['commerce_settings']['product_options']['one_time_product'];
+      if (in_array($form['#entity']->sku, $skus_used, TRUE)) {
+        drupal_set_message(
+          t('This product is being used by the Redhen Donation Type "@donation_type". If you edit the SKU you will break donation forms until you update the Donation Type.', array('@donation_type' => $type->label)),
+          'warning');
+        return;
+      }
+    }
+  }
+}
