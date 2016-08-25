@@ -1058,7 +1058,9 @@ function redhen_donation_form_submit($form, &$form_state) {
         $form_state['redirect'] = array($settings['settings']['confirmation_page']);
       }
     }
-    rules_invoke_event('redhen_donation_donation_completed', $donation, $transaction, $line_item, $product);
+    if (!$form_state['use_cart']) {
+      rules_invoke_event('redhen_donation_donation_completed', $donation, $transaction, $line_item, $product);
+    }
   }
   else {
     drupal_set_message(t('There was a problem submitting your donation.'));
