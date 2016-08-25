@@ -1311,6 +1311,15 @@ function redhen_donation_commerce_payment_order_paid_in_full($order, $transactio
 
     $donation_wrapper->save();
   }
+  // Check if any donations are in this cart:
+  $order_wrapper = entity_metadata_wrapper($order->type, $order);
+  $donations = redhen_donation_load_multiple_by_transaction_entity($order->type, $order_wrapper->getIdentifier());
+  if ($donations) {
+    foreach ($donations as $donation) {
+      $donation_wrapper = entity_metadata_wrapper('redhen_donation', $donation);
+      rules_invoke_event('redhen_donation_donation_completed', $donation, $transaction, $donation_wrapper->line_item->value(), $donation_wrapper->line_item->commerce_product->value());
+    }
+  }
 }
 
 /**
