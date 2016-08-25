@@ -1236,6 +1236,22 @@ function redhen_donation_commerce_recurring_recurring_price_alter(&$recurring_pr
  *   The donation for the given transaction id.
  */
 function redhen_donation_load_by_transaction_entity($transaction_type, $transaction_id) {
+  $donations = redhen_donation_load_multiple_by_transaction_entity($transaction_type, $transaction_id);
+  return current($donations);
+}
+
+/**
+ * Load multiple donations by transaction ID.
+ *
+ * @param string $transaction_type
+ *   Order or recurring entity.
+ * @param int $transaction_id
+ *   Entity id.
+ *
+ * @return array
+ *   An array of donations in the transaction.
+ */
+function redhen_donation_load_multiple_by_transaction_entity($transaction_type, $transaction_id) {
   $donations = redhen_donation_load_multiple(
     FALSE,
     array(
@@ -1243,7 +1259,7 @@ function redhen_donation_load_by_transaction_entity($transaction_type, $transact
       'transaction_entity_id' => $transaction_id,
     )
   );
-  return current($donations);
+  return $donations;
 }
 
 /**
