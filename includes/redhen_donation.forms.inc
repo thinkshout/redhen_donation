@@ -905,6 +905,10 @@ function redhen_donation_form_submit($form, &$form_state) {
         ),
       );
       $donation_user = user_save('', $fields);
+
+      if (!empty($donation_type->settings['commerce_settings']['product_options']['recurring_user_register_notify'])) {
+        _user_mail_notify('register_admin_created', $donation_user);
+      }
     }
     $contact_wrapper->user->set($donation_user);
     watchdog('redhen_donation', 'User has been linked to the contact %name.',

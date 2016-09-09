@@ -255,6 +255,15 @@ function redhen_donation_type_form($form, &$form_state, $donation_type, $op = 'e
       foreach ($form['settings']['commerce_settings']['product_options']['recurring']['#options'] as $key => $label) {
         $form['settings']['commerce_settings']['product_options']['recurring'][$key]['#description'] = $rec_product_description[$key];
       }
+
+      $form['settings']['commerce_settings']['product_options']['recurring_user_register_notify'] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Send a welcome message to user created for recurring donation?'),
+      );
+
+      if (isset($donation_type->settings['commerce_settings']['product_options']['recurring_user_register_notify'])) {
+        $form['settings']['commerce_settings']['product_options']['recurring_user_register_notify'] = $donation_type->settings['commerce_settings']['product_options']['recurring_user_register_notify'];
+      }
     }
     else {
       $form['settings']['commerce_settings']['product_options']['recurring'] = array(
