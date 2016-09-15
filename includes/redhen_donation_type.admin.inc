@@ -262,7 +262,7 @@ function redhen_donation_type_form($form, &$form_state, $donation_type, $op = 'e
       );
 
       if (isset($donation_type->settings['commerce_settings']['product_options']['recurring_user_register_notify'])) {
-        $form['settings']['commerce_settings']['product_options']['recurring_user_register_notify'] = $donation_type->settings['commerce_settings']['product_options']['recurring_user_register_notify'];
+        $form['settings']['commerce_settings']['product_options']['recurring_user_register_notify']['#default_value'] = $donation_type->settings['commerce_settings']['product_options']['recurring_user_register_notify'];
       }
     }
     else {
