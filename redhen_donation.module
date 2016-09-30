@@ -517,7 +517,7 @@ function redhen_donation_administer_donations_access($entity_type, $entity) {
 function redhen_donation_get_entity_donation_type($entity_type, $entity) {
   $fields = field_read_fields(array('type' => 'redhen_donation'));
   foreach ($fields as $field) {
-    if (isset($entity->$field['field_name'])) {
+    if (isset($entity->{$field['field_name']})) {
       $items = field_get_items($entity_type, $entity, $field['field_name']);
       // We're assuming there's only a single value in this field.
       if (!empty($items) && count($items) == 1 && !empty($items[0]['redhen_donation_type'])) {
