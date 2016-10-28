@@ -895,7 +895,7 @@ function redhen_donation_form_submit($form, &$form_state) {
     if (!$donation_user) {
       $password = user_password();
       $fields = array(
-        'name' => $form_state['values']['email'],
+        'name' => preg_replace('/[^a-z0-9@_.\'-]/i', '', $form_state['values']['email']),
         'mail' => $form_state['values']['email'],
         'pass' => $password,
         'status' => 1,
