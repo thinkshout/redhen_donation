@@ -362,17 +362,28 @@ function redhen_donation_entity_settings_form_validate($form, &$form_state) {
     if (module_exists('options_element')) {
       $form_state['values']['settings']['donation_amounts'] = form_options_from_text($form_state['values']['settings']['donation_amounts']['options_text'], 'mixed');
       $form_state['values']['settings']['donation_amounts_default'] = $form_state['input']['settings']['donation_amounts']['default_value_field'];
+      $form_state['values']['settings']['recurring_donation_amounts'] = form_options_from_text($form_state['values']['settings']['recurring_donation_amounts']['options_text'], 'mixed');
+      $form_state['values']['settings']['recurring_donation_amounts_default'] = $form_state['input']['settings']['recurring_donation_amounts']['default_value_field'];
     }
     else {
       $form_state['values']['settings']['donation_amounts'] = redhen_extract_allowed_amounts($form_state['values']['settings']['donation_amounts']);
+      $form_state['values']['settings']['recurring_donation_amounts'] = redhen_extract_allowed_amounts($form_state['values']['settings']['recurring_donation_amounts']);
     }
     if (empty($form_state['values']['settings']['donation_amounts'])) {
       form_set_error('settings][donation_amounts', t('No amount(s) set.'));
+    }
+    if (empty($form_state['values']['settings']['recurring_donation_amounts'])) {
+      form_set_error('settings][recurring_donation_amounts', t('No recurring amount(s) set.'));
     }
     // Validate allowed amounts.
     foreach ($form_state['values']['settings']['donation_amounts'] as $amount => $label) {
       if (!is_numeric($amount)) {
         form_set_error('settings][donation_amounts', t('Donation amounts are invalid.'));
+      }
+    }
+    foreach ($form_state['values']['settings']['recurring_donation_amounts'] as $amount => $label) {
+      if (!is_numeric($amount)) {
+        form_set_error('settings][recurring_donation_amounts', t('Recurring donation amounts are invalid.'));
       }
     }
   }
