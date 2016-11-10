@@ -826,7 +826,7 @@ function redhen_donation_form_validate($form, &$form_state) {
   if (empty($form_state['values']['donation'])) {
     form_set_error('donation', t('A donation amount must be entered.'));
   }
-  else if (!is_numeric($form_state['values']['donation'])) {
+  elseif (!is_numeric($form_state['values']['donation'])) {
     form_set_error('donation', t('Please enter a numeric donation amount without any text or currency symbols.'));
   }
   else {
