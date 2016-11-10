@@ -537,6 +537,44 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation, $us
     }
   }
 
+  // Load Commerce products based on the donation type settings.
+  $products = redhen_donation_load_configured_skus($commerce_settings['product_options']);
+  $descriptions = array();
+  $product_list = array();
+  if (isset($settings['settings']['default_product'])) {
+    // Display default product first.
+    $product_list[$settings['settings']['default_product']] = NULL;
+  }
+  foreach ($products as $product_sku => $product) {
+    $product_wrapper = entity_metadata_wrapper('commerce_product', $product);
+    $product_list[$product_sku] = $product->title;
+    $descriptions[$product_sku] = redhen_donation_product_description($product_wrapper);
+  }
+
+  if (count($products) > 1) {
+    $product_label = $commerce_settings['product_options']['product_select_label'] == "" ?
+      t('Donation Type') :
+      $commerce_settings['product_options']['product_select_label'];
+    $form['product'] = array(
+      '#type' => 'radios',
+      '#title' => $product_label,
+      '#options' => $product_list,
+      '#weight' => $form['redhen_contact']['#weight'] + 1,
+      '#required' => TRUE,
+      ),
+    );
+    foreach ($form['product']['#options'] as $key => $label) {
+      $form['product'][$key]['#description'] = $descriptions[$key];
+    }
+  }
+  else {
+    $product = current($products);
+    $form['product'] = array(
+      '#type' => 'hidden',
+      '#value' => $product->product_id,
+    );
+  }
+
   // Store the currency, we'll need it for validation.
   $form_state['currency'] = $selected_payment_method['currency'];
 
@@ -592,7 +630,8 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation, $us
       );
       break;
   }
-  $form['donation']['#weight'] = $form['redhen_contact']['#weight'] + 1;
+
+  $form['donation']['#weight'] = $form['redhen_contact']['#weight'] + 3;
   $form['line_item'] = array('#weight' => $form['redhen_contact']['#weight'] + 2);
   $line_item = commerce_line_item_new($donation_type->settings['commerce_settings']['line_item_type']);
   field_attach_form('commerce_line_item', $line_item, $form['line_item'], $form_state);
@@ -603,52 +642,6 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation, $us
     }
   }
 
-  // Load Commerce products based on the donation type settings.
-  $product_skus = array($commerce_settings['product_options']['one_time_product']);
-  if (isset($commerce_settings['product_options']['recurring'])) {
-    $product_skus = array_merge(
-      array(
-        $commerce_settings['product_options']['one_time_product'],
-      ),
-      $commerce_settings['product_options']['recurring']
-    );
-  }
-  $products = array();
-  foreach ($product_skus as $sku) {
-    if ($sku) {
-      $products[$sku] = commerce_product_load_by_sku($sku);
-    }
-  }
-
-  if (count($products) > 1) {
-    $descriptions = array();
-    $product_list = array();
-    foreach ($products as $product_sku => $product) {
-      $product_wrapper = entity_metadata_wrapper('commerce_product', $product);
-      $product_list[$product_sku] = $product->title;
-      $descriptions[$product_sku] = redhen_donation_product_description($product_wrapper);
-    }
-    $product_label = $commerce_settings['product_options']['product_select_label'] == "" ?
-      t('Donation Type') :
-      $commerce_settings['product_options']['product_select_label'];
-    $form['product'] = array(
-      '#type' => 'radios',
-      '#title' => $product_label,
-      '#options' => $product_list,
-      '#weight' => $form['redhen_contact']['#weight'] + 3,
-      '#required' => TRUE,
-    );
-    foreach ($form['product']['#options'] as $key => $label) {
-      $form['product'][$key]['#description'] = $descriptions[$key];
-    }
-  }
-  else {
-    $product = current($products);
-    $form['product'] = array(
-      '#type' => 'hidden',
-      '#value' => $product->product_id,
-    );
-  }
   if (!$form_state['use_cart']) {
     $billing_user = !is_null($contact_object->uid) ? $contact_object->uid : $user->uid;
     // Set default contact address.
