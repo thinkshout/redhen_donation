@@ -28,7 +28,7 @@
  * @return array
  *   Form array.
  */
-function redhen_donation_entity_settings_form($form, &$form_state, $settings, $entity_type = NULL, $entity_id = NULL, $bundle = NULL) {
+function redhen_donation_entity_settings_form($form, &$form_state, $settings, $entity_type = NULL, $entity_id = NULL, $bundle = NULL, $field = NULL) {
   if ($entity_id) {
     // We'll need this info when we submit the form:
     $form_state['entity'] = array(

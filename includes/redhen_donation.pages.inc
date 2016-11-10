@@ -50,10 +50,10 @@ function redhen_donation_donate_page($entity_type, $entity) {
  * @return array
  *   Donation entity settings form.
  */
-function redhen_donation_entity_settings_page($entity_type, $entity) {
+function redhen_donation_entity_settings_page($entity_type, $entity, $field) {
   list($entity_id) = entity_extract_ids($entity_type, $entity);
   $settings = redhen_donation_entity_settings($entity_type, $entity_id);
-  return drupal_get_form('redhen_donation_entity_settings_form', $settings, $entity_type, $entity_id);
+  return drupal_get_form('redhen_donation_entity_settings_form', $settings, $entity_type, $entity_id, NULL, $field);
 }
 
 /**

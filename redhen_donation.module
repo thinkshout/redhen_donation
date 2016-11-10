@@ -253,7 +253,7 @@ function redhen_donation_menu() {
         'load arguments' => array($type),
         'title' => 'Settings',
         'page callback' => 'redhen_donation_entity_settings_page',
-        'page arguments' => array($type, $position),
+        'page arguments' => array($type, $position, $instance['field_name']),
         'access callback' => 'redhen_donation_administer_donations_access',
         'access arguments' => array($type, $position),
         'weight' => 9,
