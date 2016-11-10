@@ -576,6 +576,7 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation, $us
       '#type' => 'radios',
       '#title' => $product_label,
       '#options' => $product_list,
+      '#default_value' => isset($settings['settings']['default_product']) ? $settings['settings']['default_product'] : NULL,
       '#weight' => $form['redhen_contact']['#weight'] + 1,
       '#required' => TRUE,
       ),
