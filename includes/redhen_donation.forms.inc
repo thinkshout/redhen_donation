@@ -1511,3 +1511,27 @@ function redhen_donation_edit_form_submit($form, &$form_state) {
     drupal_set_message("The donation details has been saved.");
   }
 }
+
+/**
+ * Helper function to load products based on a donation type config.
+ */
+function redhen_donation_load_configured_skus($option_settings) {
+  if (isset($option_settings['recurring'])) {
+    $product_skus = array_merge(
+      array(
+        $option_settings['one_time_product'],
+      ),
+      $option_settings['recurring']
+    );
+  }
+  else {
+    $product_skus = array($option_settings['one_time_product']);
+  }
+  $products = array();
+  foreach ($product_skus as $sku) {
+    if ($sku) {
+      $products[$sku] = commerce_product_load_by_sku($sku);
+    }
+  }
+  return $products;
+}
