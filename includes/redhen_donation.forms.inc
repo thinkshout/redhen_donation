@@ -202,20 +202,6 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
     '#description' => t('Select the type of options widget to use for donation amount.'),
   );
 
-  $donation_amounts = '';
-  if (isset($settings['settings']['donation_amounts'])) {
-    if (is_array($settings['settings']['donation_amounts'])) {
-      if (isset($settings['settings']['donation_amounts']['options_text'])) {
-        $donation_amounts = $settings['settings']['donation_amounts']['options_text'];
-      }
-      else {
-        $donation_amounts = redhen_allowed_amounts_string($settings['settings']['donation_amounts']);
-      }
-    }
-    else {
-      $donation_amounts = $settings['settings']['donation_amounts'];
-    }
-  }
   $form['settings']['donation_amounts_label'] = array(
     '#type' => 'textfield',
     '#title' => t('Amount selection label'),
@@ -230,50 +216,9 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
     '#description' => t('Label for the list of allowed donation amounts. Include "@cur" to produce a currency symbol.'),
   );
 
-  $form['settings']['donation_amounts'] = array(
-    '#type' => 'textarea',
-    '#title' => t('Donation amounts'),
-    '#default_value' => $donation_amounts,
-    '#states' => array(
-      'invisible' => array(
-        ':input[name="settings[donation_entry]"]' => array(
-          'value' => 'custom',
-        ),
-      ),
-    ),
-    '#description' => t('List of allowed donation amounts. Enter one value per line, in the format amount|label. The amount should be entered as an integer value.'),
-  );
+  $single_donation_options = isset($settings['settings']['donation_amounts']) ? $settings['settings']['donation_amounts'] : NULL;
+  $form['settings']['donation_amounts'] = redhen_donation_options_form_field('One-time Donation Amounts', $single_donation_options, $form_state);
 
-  // Use options_element style form if possible.
-  if (module_exists('options_element')) {
-    // Everything inside this if clause was informed by
-    // options_element_form_field_ui_field_settings_form_alter() and
-    // _options_element_add_allowed_values_element().
-    // Get option values or use default set.
-    if (isset($form_state['input']['settings']['donation_amounts']['options_field'])) {
-      $options = form_options_from_text($form_state['input']['settings']['donation_amounts']['options_field'], 'mixed');
-    }
-    else {
-      $options = form_options_from_text($form['settings']['donation_amounts']['#default_value'], 'mixed');
-    }
-
-    $element_overwrite = array(
-      '#type' => 'options',
-      '#options' => $options,
-      '#multiple' => FALSE,
-      // Uncomment to expose the toggle allowing users to make "key" optional.
-      // '#key_type_toggle' => t('Custom keys'),
-      '#key_type_toggled' => TRUE,
-      '#default_value_allowed' => TRUE,
-      '#default_value' => isset($settings['settings']['donation_amounts_default']) ? $settings['settings']['donation_amounts_default'] : '',
-      '#title' => $form['settings']['donation_amounts']['#title'],
-      '#description' => t('List of allowed donation amounts. The key should be entered as an integer and the value is what will be displayed on the page.'),
-      '#states' => $form['settings']['donation_amounts']['#states'],
-    );
-
-    $element = drupal_array_merge_deep($form['settings']['donation_amounts'], $element_overwrite);
-    $form['settings']['donation_amounts'] = $element;
-  }
 
   $form['settings']['other_label'] = array(
     '#type' => 'textfield',
@@ -339,6 +284,65 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
   );
 
   return $form;
+}
+
+function redhen_donation_options_form_field($label, $options, &$form_state) {
+  if (is_array($options)) {
+    if (isset($options['options_text'])) {
+      $donation_amounts = $options['options_text'];
+    }
+    else {
+      $donation_amounts = redhen_allowed_amounts_string($options);
+    }
+  }
+  else {
+    $donation_amounts = $options;
+  }
+  $field = array(
+    '#type' => 'textarea',
+    '#title' => t($label),
+    '#default_value' => $donation_amounts,
+    '#states' => array(
+      'invisible' => array(
+        ':input[name="settings[donation_entry]"]' => array(
+          'value' => 'custom',
+        ),
+      ),
+    ),
+    '#description' => t('List of allowed donation amounts. Enter one value per line, in the format amount|label. The amount should be entered as an integer value.'),
+  );
+
+  // Use options_element style form if possible.
+  if (module_exists('options_element')) {
+    // Everything inside this if clause was informed by
+    // options_element_form_field_ui_field_settings_form_alter() and
+    // _options_element_add_allowed_values_element().
+    // Get option values or use default set.
+    if (isset($form_state['input']['settings']['donation_amounts']['options_field'])) {
+      $options = form_options_from_text($form_state['input']['settings']['donation_amounts']['options_field'], 'mixed');
+    }
+    else {
+      $options = form_options_from_text($field['#default_value'], 'mixed');
+    }
+
+    $element_overwrite = array(
+      '#type' => 'options',
+      '#options' => $options,
+      '#multiple' => FALSE,
+      // Uncomment to expose the toggle allowing users to make "key" optional.
+      // '#key_type_toggle' => t('Custom keys'),
+      '#key_type_toggled' => TRUE,
+      '#default_value_allowed' => TRUE,
+      '#default_value' => isset($settings['settings']['donation_amounts_default']) ? $settings['settings']['donation_amounts_default'] : '',
+      '#title' => $field['#title'],
+      '#description' => t('List of allowed donation amounts. The key should be entered as an integer and the value is what will be displayed on the page.'),
+      '#states' => $field['#states'],
+    );
+
+    $element = drupal_array_merge_deep($field, $element_overwrite);
+    $field = $element;
+  }
+  return $field;
 }
 
 /**
