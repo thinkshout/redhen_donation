@@ -579,6 +579,10 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation, $us
       '#default_value' => isset($settings['settings']['default_product']) ? $settings['settings']['default_product'] : NULL,
       '#weight' => $form['redhen_contact']['#weight'] + 1,
       '#required' => TRUE,
+      '#ajax' => array(
+        'callback' => 'redhen_donation_amount_options_callback',
+        'wrapper' => 'donation-amount',
+        'method' => 'replace',
       ),
     );
     foreach ($form['product']['#options'] as $key => $label) {
@@ -597,9 +601,25 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation, $us
   $form_state['currency'] = $selected_payment_method['currency'];
 
   $cur = commerce_currency_get_symbol($selected_payment_method['currency']);
+
+  if (isset($form_state['values']['product'])) {
+    $default_product = $products[$form_state['values']['product']];
+  }
+  elseif (isset($form['product']['#default_value'])) {
+    $default_product = $products[$form['product']['#default_value']];
+  }
+  else {
+    $default_product = current($products);
+  }
+  if (commerce_recurring_product_is_recurring($default_product) && !empty($settings['settings']['recurring_donation_amounts'])) {
+    $amount_options = $settings['settings']['recurring_donation_amounts'];
+  }
+  else {
+    $amount_options = isset($settings['settings']['donation_amounts']) ? $settings['settings']['donation_amounts'] : NULL;
+  }
   $donation_amounts = array();
-  if (isset($settings['settings']['donation_amounts'])) {
-    foreach ($settings['settings']['donation_amounts'] as $amount => $description) {
+  if (isset($amount_options)) {
+    foreach ($amount_options as $amount => $description) {
       $donation_amounts[$amount] = $description;
     }
   }
@@ -650,6 +670,9 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation, $us
   }
 
   $form['donation']['#weight'] = $form['redhen_contact']['#weight'] + 3;
+  $form['donation']['#prefix'] = '<div id="donation-amount">';
+  $form['donation']['#suffix'] = '</div>';
+
   $form['line_item'] = array('#weight' => $form['redhen_contact']['#weight'] + 2);
   $line_item = commerce_line_item_new($donation_type->settings['commerce_settings']['line_item_type']);
   field_attach_form('commerce_line_item', $line_item, $form['line_item'], $form_state);
@@ -728,6 +751,10 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation, $us
   redhen_donation_override_form_default_values($form, $params);
 
   return $form;
+}
+
+function redhen_donation_amount_options_callback($form, $form_state) {
+  return $form['donation'];
 }
 
 /**
