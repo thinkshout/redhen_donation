@@ -632,7 +632,6 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation, $us
       $form['donation'] = array(
         '#type' => $settings['settings']['donation_entry'],
         '#title' => $amount_title,
-        '#required' => TRUE,
         '#options' => $donation_amounts,
         '#default_value' => $donation_amounts_default,
         '#multiple' => FALSE,
@@ -641,11 +640,9 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation, $us
 
     case 'select_other':
     case 'radio_other':
-
       $form['donation'] = array(
         '#type' => 'select_or_other',
         '#title' => $amount_title,
-        '#required' => TRUE,
         '#multiple' => FALSE,
         '#options' => $donation_amounts,
         '#default_value' => $donation_amounts_default,
@@ -663,7 +660,6 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation, $us
         '#type' => 'textfield',
         '#title' => $amount_title,
         '#default_value' => '',
-        '#required' => TRUE,
         '#description' => t('Please enter an amount.'),
       );
       break;
@@ -827,7 +823,7 @@ function redhen_donation_form_validate($form, &$form_state) {
     }
   }
   // Validate 'other' amounts.
-  if($form['donation']['#required'] && empty($form_state['values']['donation'])) {
+  if (empty($form_state['values']['donation'])) {
     form_set_error('donation', t('A donation amount must be entered.'));
   }
   else if (!is_numeric($form_state['values']['donation'])) {
