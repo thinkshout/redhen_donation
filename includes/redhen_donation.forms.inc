@@ -172,6 +172,22 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
       ),
     );
   }
+  if (isset($field)) {
+    $donation_type = redhen_donation_type_load($wrapper->{$field}->value());
+    $products = redhen_donation_load_configured_skus($donation_type->settings['commerce_settings']['product_options']);
+    $product_options = array('' => '-- None --');
+    foreach ($products as $product) {
+      $product_options[$product->sku] = $product->title;
+    }
+    $first_product = reset($products);
+    $form['settings']['default_product'] = array(
+      '#type' => 'select',
+      '#title' => t('Default donation product'),
+      '#default_value' => isset($settings['settings']['default_product']) ? $settings['settings']['default_product'] : $first_product->sku,
+      '#options' => $product_options,
+      '#description' => t('Select the product type to be selected by default.'),
+    );
+  }
   $form['settings']['donation_entry'] = array(
     '#type' => 'select',
     '#title' => t('Donation entry'),
