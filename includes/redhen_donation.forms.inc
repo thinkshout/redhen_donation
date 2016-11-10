@@ -219,6 +219,8 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
   $single_donation_options = isset($settings['settings']['donation_amounts']) ? $settings['settings']['donation_amounts'] : NULL;
   $form['settings']['donation_amounts'] = redhen_donation_options_form_field('One-time Donation Amounts', $single_donation_options, $form_state);
 
+  $recurring_donation_options = isset($settings['settings']['recurring_donation_amounts']) ? $settings['settings']['recurring_donation_amounts'] : NULL;
+  $form['settings']['recurring_donation_amounts'] = redhen_donation_options_form_field('Recurring Donation Amounts', $recurring_donation_options, $form_state);
 
   $form['settings']['other_label'] = array(
     '#type' => 'textfield',
