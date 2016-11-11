@@ -609,7 +609,7 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation, $us
     $default_product = $products[$form['product']['#default_value']];
   }
   else {
-    $default_product = current($products);
+    $default_product = reset($products);
   }
   if (commerce_recurring_product_is_recurring($default_product) && !empty($settings['settings']['recurring_donation_amounts'])) {
     $amount_options = $settings['settings']['recurring_donation_amounts'];
