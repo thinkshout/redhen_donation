@@ -61,7 +61,8 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
     '#type' => 'textfield',
     '#title' => t('Open Date'),
     '#maxlength' => 25,
-    '#description' => t('When to automatically open donations. Format: %time. The date format is YYYY-MM-DD and %timezone is the time zone offset from UTC. Leave blank to disable.', array(
+    '#description' => t('When to automatically open donations. Format: %time. The date format is YYYY-MM-DD and %timezone is the time zone offset from UTC. Leave blank to disable.',
+      array(
         '%time' => !empty($settings['open']) ? date_format(date_create($settings['open']), 'Y-m-d H:i:s O') : format_date(time(), 'custom', 'Y-m-d H:i:s O'),
         '%timezone' => !empty($settings['open']) ? date_format(date_create($settings['open']), 'O') : format_date(time(), 'custom', 'O'),
       )
@@ -74,7 +75,8 @@ function redhen_donation_entity_settings_form($form, &$form_state, $settings, $e
     '#type' => 'textfield',
     '#title' => t('Close Date'),
     '#maxlength' => 25,
-    '#description' => t('When to automatically close donations. Format: %time. The date format is YYYY-MM-DD and %timezone is the time zone offset from UTC. Leave blank to disable.', array(
+    '#description' => t('When to automatically close donations. Format: %time. The date format is YYYY-MM-DD and %timezone is the time zone offset from UTC. Leave blank to disable.',
+      array(
         '%time' => !empty($settings['close']) ? date_format(date_create($settings['close']), 'Y-m-d H:i') : format_date(time(), 'custom', 'Y-m-d H:i'),
         '%timezone' => !empty($settings['close']) ? date_format(date_create($settings['close']), 'O') : format_date(time(), 'custom', 'O'),
       )
@@ -799,9 +801,8 @@ function redhen_donation_form_validate($form, &$form_state) {
   // Email validation.
   $valid_email = valid_email_address($form_state['values']['email']);
   if (!$valid_email) {
-    $message = t('"%mail" is not a valid email address', array(
-      '%mail' => $form_state['values']['email'],
-      )
+    $message = t('"%mail" is not a valid email address',
+      array('%mail' => $form_state['values']['email'])
     );
     form_set_error('email', $message);
   }
@@ -811,14 +812,14 @@ function redhen_donation_form_validate($form, &$form_state) {
   field_attach_form_validate('commerce_commerce_line_item', $donation, $form['line_item'], $form_state);
   if (!$form_state['use_cart']) {
     field_attach_form_validate('commerce_customer_profile', $donation, $form['customer_profile'], $form_state);
-    // Validate the values entered for the credit card details
+    // Validate the values entered for the credit card details:
     if (isset($form['commerce_payment_form']['payment_details']['credit_card'])) {
       module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
       commerce_payment_credit_card_validate($form_state['values']['payment_details']['credit_card'], array(
         'form_parents' => array(
           'payment_details',
-          'credit_card'
-        )
+          'credit_card',
+        ),
       ));
     }
   }
@@ -1470,7 +1471,7 @@ function redhen_donation_add_form_submit($form, &$form_state) {
  *   Donation form array.
  */
 function redhen_donation_edit_form($form, &$form_state, RedhenDonation $donation) {
-  // Save a reference to the donation
+  // Save a reference to the donation.
   $form_state['donation'] = $donation;
 
   $form['pledged'] = array(
@@ -1488,7 +1489,7 @@ function redhen_donation_edit_form($form, &$form_state, RedhenDonation $donation
     '#default_value' => number_format($donation->received / 100, 2, '.', ''),
   );
 
-  // Attach the field api fields for the entity
+  // Attach the field api fields for the entity.
   field_attach_form('redhen_donation', $donation, $form, $form_state);
 
   // Add the action buttons to the bottom of the form.
