@@ -375,21 +375,24 @@ function redhen_donation_update_7004() {
 /**
  * Update Donation Type settings to use SKUs rather than Product IDs.
  */
-function redhen_donation_update_7005() {
+function redhen_donation_update_7006() {
   $types = redhen_donation_get_types();
   foreach ($types as $type) {
     if ($one_time_product = commerce_product_load($type->settings['commerce_settings']['product_options']['one_time_product'])) {
       $type->settings['commerce_settings']['product_options']['one_time_product'] = $one_time_product->sku;
     }
     $new_recurring_config = array();
-    foreach ($type->settings['commerce_settings']['product_options']['recurring'] as $id => $value) {
-      $rec_product = commerce_product_load($id);
-      if ($rec_product) {
-        $new_recurring_config[$rec_product->sku] = $value ? $rec_product->sku : 0;
+    if (!empty($type->settings['commerce_settings']['product_options']['recurring'])) {
+      foreach ($type->settings['commerce_settings']['product_options']['recurring'] as $id => $value) {
+        $rec_product = commerce_product_load($id);
+        if ($rec_product) {
+          $new_recurring_config[$rec_product->sku] = $value ? $rec_product->sku : 0;
+        }
       }
-    }
-    if (!empty($new_recurring_config)) {
-      $type->settings['commerce_settings']['product_options']['recurring'] = $new_recurring_config;
+
+      if (!empty($new_recurring_config)) {
+        $type->settings['commerce_settings']['product_options']['recurring'] = $new_recurring_config;
+      }
     }
     redhen_donation_type_save($type);
   }
