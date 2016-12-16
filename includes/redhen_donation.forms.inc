@@ -898,7 +898,7 @@ function redhen_donation_form_submit($form, &$form_state) {
     // entity's bundle.
     foreach($update_fields as $update_field) {
       $options = array(
-        'field_name' => $update_field
+        'field_name' => $update_field,
       );
       field_attach_submit('redhen_contact', $contact, $form, $form_state, $options);
     }
@@ -906,6 +906,7 @@ function redhen_donation_form_submit($form, &$form_state) {
     // Set Address field if needed.
     if (!empty($donation_type->settings['contact_settings']['profile_selector']) &&
       $donation_type->settings['contact_settings']['profile_selector'] != 'billing') {
+      $sync_field = $donation_type->settings['contact_settings']['profile_selector'];
       $contact_address = array();
       if (!empty($contact_wrapper->{$sync_field})) {
         // The wrapper can be set, but the value equal to null in some cases.
