@@ -592,10 +592,10 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation, $us
     }
   }
   else {
-    $product = current($products);
+    $product = reset($products);
     $form['product'] = array(
       '#type' => 'hidden',
-      '#value' => $product->product_id,
+      '#value' => $product->sku,
     );
   }
 
