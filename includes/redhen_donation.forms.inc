@@ -1107,6 +1107,8 @@ function redhen_donation_form_submit($form, &$form_state) {
       else {
         $message = $settings['settings']['confirmation_message'];
       }
+      // Allow other modules to change the confirmation message.
+      drupal_alter('redhen_donation_confirmation_message', $message);
       drupal_set_message($message);
     }
     if (!isset($form_state['redirect'])) {

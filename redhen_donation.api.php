@@ -105,3 +105,11 @@ function hook_redhen_donation_order_alter($order_wrapper, $form, $form_state) {
   // Add a item to the order.
   $order_wrapper->commerce_line_items[] = $line_item;
 }
+
+/**
+ * Allow other modules to change the confirmation message.
+ *
+ * @param string $message
+ */
+function hook_redhen_donation_confirmation_message_alter(&$message) {
+}
