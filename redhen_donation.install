@@ -375,7 +375,7 @@ function redhen_donation_update_7004() {
 /**
  * Update Donation Type settings to use SKUs rather than Product IDs.
  */
-function redhen_donation_update_7006() {
+function redhen_donation_update_7005() {
   $types = redhen_donation_get_types();
   foreach ($types as $type) {
     if ($one_time_product = commerce_product_load($type->settings['commerce_settings']['product_options']['one_time_product'])) {
