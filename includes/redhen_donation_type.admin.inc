@@ -51,7 +51,7 @@ function redhen_donation_type_form($form, &$form_state, $donation_type, $op = 'e
     '#title' => t('Contact type'),
     '#default_value' => isset($donation_type->settings['contact_settings']['contact_type']) ? $donation_type->settings['contact_settings']['contact_type'] : NULL,
     '#options' => redhen_contact_type_options_list(),
-    '#empty_value' => FALSE,
+    '#empty_value' => TRUE,
     '#required' => TRUE,
     '#description' => t('Select the contact type that will be created if a contact does not exist.'),
     '#ajax' => array(
@@ -60,9 +60,16 @@ function redhen_donation_type_form($form, &$form_state, $donation_type, $op = 'e
     ),
   );
 
+  // If there are no contact types to select, warn the user before they start
+  // filling out the form:
+  if (empty(redhen_contact_type_options_list()) && !$form_state['rebuild']) {
+    $message = t("You must add at least one !link before you can create a donation type.",
+      array('!link' => l(t('contact type'), 'admin/structure/redhen/contact_types')));
+    drupal_set_message($message, 'warning');
+  }
+
   $form['settings']['contact_settings']['update_fields'] = array(
     '#type' => 'checkbox',
-    '#options' => array(1,1),
     '#title' => t('Update contact fields'),
     '#description' => t('Should the contact fields be updated?'),
     '#default_value' => isset($donation_type->settings['contact_settings']['update_fields']) ? $donation_type->settings['contact_settings']['update_fields'] : NULL,
@@ -146,13 +153,20 @@ function redhen_donation_type_form($form, &$form_state, $donation_type, $op = 'e
   foreach ($recurring_product_types as $rec_type) {
     unset($product_types[$rec_type]);
   }
+  $one_time_product_default = isset($donation_type->settings['commerce_settings']['one_time_product_type']) ? $donation_type->settings['commerce_settings']['one_time_product_type'] : NULL;
+  if (empty($one_time_product_default) && count($product_types) == 1) {
+    // If there is only one product type, assume we are going to use that so
+    // product options show up without a seperate ajax request:
+    $one_time_product_default = key($product_types);
+    $form_state['values']['settings']['commerce_settings']['one_time_product_type'] = $one_time_product_default;
+  }
   $form['settings']['commerce_settings']['one_time_product_type'] = array(
     '#title' => t('One time product type'),
     '#type' => 'select',
     '#options' => $product_types,
-    '#default_value' => isset($donation_type->settings['commerce_settings']['one_time_product_type']) ? $donation_type->settings['commerce_settings']['one_time_product_type'] : NULL,
+    '#default_value' => $one_time_product_default,
     '#required' => TRUE,
-    '#empty_value' => FALSE,
+    '#empty_value' => TRUE,
     '#ajax' => array(
       'callback' => 'redhen_donation_type_form_callback',
       'wrapper' => 'product-options-wrapper',
@@ -174,9 +188,11 @@ function redhen_donation_type_form($form, &$form_state, $donation_type, $op = 'e
   if (count($line_item_type_options) >= 1) {
     $form['settings']['commerce_settings']['line_item_type'] = array(
       '#type' => 'select',
-      '#title' => t('Line item type.'),
+      '#title' => t('Line item type'),
       '#options' => $line_item_type_options,
       '#default_value' => isset($donation_type->settings['commerce_settings']['line_item_type']) ? $donation_type->settings['commerce_settings']['line_item_type'] : NULL,
+      '#required' => TRUE,
+      '#empty_value' => TRUE,
       '#description' => t('Choose a line item type.'),
     );
   }
@@ -198,7 +214,6 @@ function redhen_donation_type_form($form, &$form_state, $donation_type, $op = 'e
 
   if (!empty($one_time_product_type)) {
     // Product options.
-    $product_options = array('' => t('None'));
     $rec_product_options = array();
     $query = new EntityFieldQuery();
     $query->entityCondition('entity_type', 'commerce_product')
@@ -211,7 +226,10 @@ function redhen_donation_type_form($form, &$form_state, $donation_type, $op = 'e
     $result = $query->execute();
 
     if (!isset($result['commerce_product'])) {
-      $product_options = array('' => 'No products found');
+      // If there are no products to select, warn the user before they start
+      // filling out the form:
+      $message = t("You must add at least one !link before you can create a donation type.", array('!link' => l(t('product'), 'admin/commerce/products')));
+      drupal_set_message($message, 'warning');
     }
     else {
       $products = commerce_product_load_multiple(array_keys($result['commerce_product']));
@@ -238,9 +256,11 @@ function redhen_donation_type_form($form, &$form_state, $donation_type, $op = 'e
     $form['settings']['commerce_settings']['product_options']['one_time_product'] = array(
       '#type' => 'select',
       '#title' => t('One Time Product'),
-      '#options' => $product_options,
+      '#options' => isset($product_options) ? $product_options : array(),
       '#description' => t('Choose a one time product.'),
-      '#default_value' => isset($donation_type->settings['commerce_settings']['product_options']['one_time_product']) ? $donation_type->settings['commerce_settings']['product_options']['one_time_product'] : array(),
+      '#default_value' => isset($donation_type->settings['commerce_settings']['product_options']['one_time_product']) ? $donation_type->settings['commerce_settings']['product_options']['one_time_product'] : NULL,
+      '#required' => TRUE,
+      '#empty_value' => TRUE,
     );
 
     if (count($rec_product_options) >= 1) {
@@ -310,6 +330,13 @@ function redhen_donation_type_form($form, &$form_state, $donation_type, $op = 'e
         array('!link' => l(t('payment method'), 'admin/commerce/config/payment-methods'))
       ),
     );
+    // If there are no payment types, warn the user before they start filling
+    // out the form:
+    if (!$form_state['rebuild']) {
+      $message = t("You must configure and/or enable at least one !link before you can create a donation type.",
+        array('!link' => l(t('payment method'), 'admin/commerce/config/payment-methods')));
+      drupal_set_message($message, 'warning');
+    }
   }
   else {
     $form['settings']['commerce_settings']['payment_options'] = array(
