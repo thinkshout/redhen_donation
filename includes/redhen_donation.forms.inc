@@ -853,7 +853,7 @@ function redhen_donation_form_submit($form, &$form_state) {
   if ($new_contact) {
     // Attempt to load contact based on given email.
     if ($contact_email_search = redhen_contact_load_by_mail($form_state['values']['email'])) {
-      $contact = current($contact_email_search);
+      $contact = $form_state['redhen_contact'] = current($contact_email_search);
       $new_contact = FALSE;
     }
   }
