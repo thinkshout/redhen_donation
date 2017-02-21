@@ -442,11 +442,11 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation, $us
   if (!isset($form_state['#donation_settings'])) {
     $form_state['donation_settings']
       = $settings
-        = redhen_donation_entity_settings(
-            $donation->entity_type,
-            $donation->entity_id,
-            TRUE
-          );
+      = redhen_donation_entity_settings(
+      $donation->entity_type,
+      $donation->entity_id,
+      TRUE
+    );
   }
 
   $donation_type = redhen_donation_type_load($donation->bundle());
@@ -550,7 +550,7 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation, $us
   if (!empty($form_state['values']['payment_method'])) {
     foreach ($commerce_settings['payment_methods'] as $payment_method) {
       if ($payment_method['payment_method'] == $form_state['values']['payment_method']) {
-        $selected_payment_method  = $payment_method;
+        $selected_payment_method = $payment_method;
         break;
       }
     }
