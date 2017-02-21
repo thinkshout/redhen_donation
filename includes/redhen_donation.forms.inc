@@ -548,7 +548,7 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation, $us
   // Handle currency mapping.
   $selected_payment_method = current($commerce_settings['payment_methods']);
   if (!empty($form_state['values']['payment_method'])) {
-    foreach ($commerce_settings['payments_methods'] as $payment_method) {
+    foreach ($commerce_settings['payment_methods'] as $payment_method) {
       if ($payment_method['payment_method'] == $form_state['values']['payment_method']) {
         $selected_payment_method  = $payment_method;
         break;
