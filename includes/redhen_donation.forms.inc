@@ -719,7 +719,8 @@ function redhen_donation_form($form, &$form_state, RedhenDonation $donation, $us
     $checkout_pane = array();
     $order = new stdClass();
     $pane_values = array();
-    if ($callback = commerce_payment_method_callback($payment_method, 'submit_form')) {
+    $callback = commerce_payment_method_callback($payment_method, 'submit_form');
+    if (is_callable($callback)) {
       $pane_form['payment_details'] = $callback($payment_method, $pane_values, $checkout_pane, $order);
     }
     else {
@@ -905,7 +906,7 @@ function redhen_donation_form_submit($form, &$form_state) {
 
     // Set Address field if needed.
     if (!empty($donation_type->settings['contact_settings']['profile_selector']) &&
-      $donation_type->settings['contact_settings']['profile_selector'] != 'billing') {
+        $donation_type->settings['contact_settings']['profile_selector'] != 'billing') {
       $sync_field = $donation_type->settings['contact_settings']['profile_selector'];
       $contact_address = array();
       if (!empty($contact_wrapper->{$sync_field})) {
@@ -973,13 +974,13 @@ function redhen_donation_form_submit($form, &$form_state) {
 
   // Commerce handling.
   $order_type
-    = isset($donation_type->settings['commerce_settings']['order_type']) ?
-      $donation_type->settings['commerce_settings']['order_type'] :
-      'commerce_order';
+       = isset($donation_type->settings['commerce_settings']['order_type']) ?
+    $donation_type->settings['commerce_settings']['order_type'] :
+    'commerce_order';
   $line_item_type
-    = isset($donation_type->settings['commerce_settings']['line_item_type']) ?
-      $donation_type->settings['commerce_settings']['line_item_type'] :
-      'product';
+       = isset($donation_type->settings['commerce_settings']['line_item_type']) ?
+    $donation_type->settings['commerce_settings']['line_item_type'] :
+    'product';
   $uid = isset($donation_user->uid) ? $donation_user->uid : 0;
   if ($form_state['use_cart']) {
     // Allow dictating of a specific order by donation creator:
@@ -1033,7 +1034,8 @@ function redhen_donation_form_submit($form, &$form_state) {
     // Now we can process the payment at last.
     $payment_method = commerce_payment_method_instance_load($form_state['values']['payment_method']);
     // Delegate submit to the payment method callback.
-    if ($callback = commerce_payment_method_callback($payment_method, 'submit_form_submit')) {
+    $callback = commerce_payment_method_callback($payment_method, 'submit_form_submit');
+    if (is_callable($callback)) {
       $charge = array(
         'amount' => $order_total,
         'currency_code' => $currency,
@@ -1198,7 +1200,7 @@ function redhen_donation_get_payment_methods(&$form_state) {
       $methods[] = array();
     }
     if (isset($form_state['triggering_element']['#ajax']['delta']) &&
-      $form_state['triggering_element']['#name'] == 'delete_method-' . $form_state['triggering_element']['#ajax']['delta']) {
+        $form_state['triggering_element']['#name'] == 'delete_method-' . $form_state['triggering_element']['#ajax']['delta']) {
       $delta = $form_state['triggering_element']['#ajax']['delta'];
       unset($methods[$delta]);
     }
@@ -1288,9 +1290,9 @@ function redhen_donation_product_description($product_wrapper) {
     ));
     if ($end_period != '') {
       $description .= ' ' . t('for @end_interval @end_period(s)', array(
-        '@end_period' => $end_period,
-        '@end_interval' => $end_interval,
-      ));
+          '@end_period' => $end_period,
+          '@end_interval' => $end_interval,
+        ));
     }
 
   }
