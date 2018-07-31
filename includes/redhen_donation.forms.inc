@@ -1033,6 +1033,8 @@ function redhen_donation_form_submit($form, &$form_state) {
 
     // Now we can process the payment at last.
     $payment_method = commerce_payment_method_instance_load($form_state['values']['payment_method']);
+    // Try to get a redirect payment callback for offsite methods.
+    $callback_redirect = commerce_payment_method_callback($payment_method, 'redirect_form');
     // Delegate submit to the payment method callback.
     $callback = commerce_payment_method_callback($payment_method, 'submit_form_submit');
     if (is_callable($callback)) {
@@ -1055,17 +1057,24 @@ function redhen_donation_form_submit($form, &$form_state) {
       commerce_line_item_save($line_item);
 
       $callback($payment_method, $details_form, $details_values, $order, $charge);
-      $transaction = entity_load('commerce_payment_transaction', FALSE, array('order_id' => $order->order_id));
-      $transaction = current($transaction);
-      if ($transaction->status != 'success') {
-        commerce_order_status_update($order, 'canceled', FALSE, TRUE, t('Payment declined: @message'), array('@message' => $transaction->message));
-        drupal_set_message(t('There was a problem with your payment: @message', array('@message' => $transaction->message)), 'error');
-        // This preserves the form state if a user wants to resubmit.
-        $form_state['redirect'] = FALSE;
-        return FALSE;
+      // Only test transaction if we don't have an offise payment method.
+      if (!$callback_redirect) {
+        $transaction = entity_load('commerce_payment_transaction', FALSE, array('order_id' => $order->order_id));
+        $transaction = current($transaction);
+        if ($transaction->status != 'success') {
+          commerce_order_status_update($order, 'canceled', FALSE, TRUE, t('Payment declined: @message'), array('@message' => $transaction->message));
+          drupal_set_message(t('There was a problem with your payment: @message', array('@message' => $transaction->message)), 'error');
+          // This preserves the form state if a user wants to resubmit.
+          $form_state['redirect'] = FALSE;
+          return FALSE;
+        }
+        else {
+          commerce_order_status_update($order, 'completed', FALSE, TRUE, t('Payment accepted successful.'));
+        }
       }
       else {
-        commerce_order_status_update($order, 'completed', FALSE, TRUE, t('Payment accepted successful.'));
+        // Mark order as pending, awaiting result of offsite payment.
+        commerce_order_status_update($order, 'pending', FALSE, TRUE, t('Pending offsite payment.'));
       }
     }
   }
@@ -1095,31 +1104,47 @@ function redhen_donation_form_submit($form, &$form_state) {
 
   // Save the donation and redirect.
   if (redhen_donation_save($donation)) {
-    watchdog('redhen_donation', 'RedHen Donation %donation_id has been saved.',
-      array('%donation_id' => $donation->donation_id),
-      WATCHDOG_NOTICE
-    );
-    if (!empty($settings['settings']['confirmation_message'])) {
-      if (module_exists('token')) {
-        $message = token_replace($settings['settings']['confirmation_message'], array(
-          'redhen_donation' => $donation,
-          'redhen_contact' => $contact,
-        ));
-      }
-      else {
-        $message = $settings['settings']['confirmation_message'];
-      }
-      // Allow other modules to change the confirmation message.
-      drupal_alter('redhen_donation_confirmation_message', $message);
-      drupal_set_message($message);
+    // For offsite payment methods defer redirection and rules invocation.
+    if($callback_redirect) {
+      // Store donation data on order for reference later.
+      $order->data['redhen_donation'] = array(
+        'bundle' => $donation->bundle(),
+        'donation_id' => $donation->donation_id,
+        'line_item_id' => $line_item->line_item_id,
+        'product_id' => $product->product_id,
+        'payment_method' => $form_state['values']['payment_method']
+      );
+      commerce_order_save($order);
+      // Hand over payment processing to offsite method.
+      $callback_redirect($form, $form_state, $order, $payment_method);
     }
-    if (!isset($form_state['redirect'])) {
-      if (!empty($settings['settings']['confirmation_page'])) {
-        $form_state['redirect'] = array($settings['settings']['confirmation_page']);
+    else {
+      watchdog('redhen_donation', 'RedHen Donation %donation_id has been saved.',
+        array('%donation_id' => $donation->donation_id),
+        WATCHDOG_NOTICE
+      );
+      if (!empty($settings['settings']['confirmation_message'])) {
+        if (module_exists('token')) {
+          $message = token_replace($settings['settings']['confirmation_message'], array(
+            'redhen_donation' => $donation,
+            'redhen_contact' => $contact,
+          ));
+        }
+        else {
+          $message = $settings['settings']['confirmation_message'];
+        }
+        // Allow other modules to change the confirmation message.
+        drupal_alter('redhen_donation_confirmation_message', $message);
+        drupal_set_message($message);
       }
-    }
-    if (!$form_state['use_cart']) {
-      rules_invoke_event('redhen_donation_donation_completed', $donation, $transaction, $line_item, $product);
+      if (!isset($form_state['redirect'])) {
+        if (!empty($settings['settings']['confirmation_page'])) {
+          $form_state['redirect'] = array($settings['settings']['confirmation_page']);
+        }
+      }
+      if (!$form_state['use_cart']) {
+        rules_invoke_event('redhen_donation_donation_completed', $donation, $transaction, $line_item, $product);
+      }
     }
   }
   else {
