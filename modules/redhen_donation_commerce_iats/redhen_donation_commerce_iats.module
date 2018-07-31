@@ -1,0 +1,131 @@
+<?php
+
+/**
+ * @file
+ * RedHen customizations for the Commerce iATS payment method.
+ */
+
+/**
+ * TODO: If direct post is enabled.
+ *
+ * Introduce new credit card payment method for RedHen.
+ * Replace commerce iats credit card form so direct post fields are not used.
+ * Add new submit handler to commerce iats credit card payment method.
+ * On submit, collect submitted data and build new form.
+ * New form consists of iats direct post form fields.
+ * Populate iats direct post form field.
+ * Insert javascript used to post form to iats.
+ * Add callback to handle response from iats.
+ * Continue donation process as usual on response from iats.
+ */
+
+/**
+ * Implements hook_commerce_payment_method_info().
+ */
+function redhen_donation_commerce_iats_commerce_payment_method_info() {
+  $payment_methods = array();
+
+  $commerce_iats_path = drupal_get_path('module', 'commerce_iats');
+
+  $payment_methods['redhen_iats_credit_card'] = array(
+    'base' => 'redhen_donation_commerce_iats_credit_card',
+    'title' => t('iATS Payments: RedHen custom credit card payment'),
+    'short_title' => t('RedHen iATS credit card payment'),
+    'display_title' => t('Credit card'),
+    'description' => t('Integrates the iATS ProcessLink webservice width RedHen for credit card payments.'),
+    'file' => $commerce_iats_path . '/includes/commerce_iats.credit_card.inc',
+  );
+
+  return $payment_methods;
+}
+
+/**
+ * Payment method callback: settings form.
+ */
+function redhen_donation_commerce_iats_credit_card_settings_form($settings = NULL) {
+  module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
+
+  return commerce_iats_credit_card_settings_form_base($settings);
+}
+
+/**
+ * Payment method callback: checkout form.
+ */
+function redhen_donation_commerce_iats_credit_card_submit_form($payment_method, $pane_values, $checkout_pane, $order) {
+  module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
+
+  // Prepare the fields to include on the credit card form.
+  $fields = array(
+    'code' => '',
+    'type' => commerce_iats_enabled_credit_card_types($payment_method),
+  );
+
+  $form = commerce_payment_credit_card_form($fields);
+
+  if (strstr($_SERVER['HTTP_REFERER'], '/admin/')) {
+    // If the form is requested via the admin panel, CVV is optional.
+    $form['credit_card']['code']['#required'] = FALSE;
+  }
+
+  return $form;
+
+//  if (isset($payment_method['settings']['direct_post']['enable_direct_post']) && $payment_method['settings']['direct_post']['enable_direct_post'] == 1) {
+//    module_load_include('inc', 'commerce_iats', 'includes/commerce_iats.direct_post.forms');
+//    return commerce_iats_direct_post_credit_card_form($payment_method, $order);
+//  }
+//  else {
+//    module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
+//
+//    // Prepare the fields to include on the credit card form.
+//    $fields = array(
+//      'code' => '',
+//      'type' => commerce_iats_enabled_credit_card_types($payment_method),
+//    );
+//
+//    $form = commerce_payment_credit_card_form($fields);
+//
+//    if (strstr($_SERVER['HTTP_REFERER'], '/admin/')) {
+//      // If the form is requested via the admin panel, CVV is optional.
+//      $form['credit_card']['code']['#required'] = FALSE;
+//    }
+//
+//    return $form;
+//  }
+}
+
+/**
+ * Payment method callback: checkout form submission.
+ */
+function redhen_donation_commerce_iats_credit_card_submit_form_submit($payment_method, $pane_form, $pane_values, $order, $charge) {
+  // Validate credit card charge.
+  if (empty($charge['amount'])) {
+    $order->revision = TRUE;
+    $order->log = 'Order charge amount is empty.';
+    commerce_order_save($order);
+
+    watchdog('commerce_iats', 'Empty charge amount: @charge for order @order', array(
+      '@charge' => '<pre>' . check_plain(print_r($charge, TRUE)) . '</pre>',
+      '@order' => '<pre>' . check_plain(print_r($order, TRUE)) . '</pre>',
+    ), WATCHDOG_DEBUG);
+    return FALSE;
+  }
+
+  $payment_data = $pane_values;
+
+  if (isset($payment_method['settings']['direct_post']['enable_direct_post']) && $payment_method['settings']['direct_post']['enable_direct_post'] == 1) {
+    // Process as direct post credit card payment.
+    redhen_donation_commerce_iats_credit_card_submit_form_direct_post($payment_method, $pane_form, $pane_values, $order, $charge);
+  }
+  else {
+    // Process as regular credit card payment.
+    return commerce_iats_process_payment($payment_method, $payment_data, $order,
+      $charge, 'commerce_iats_process_credit_card_payment');
+  }
+}
+
+/**
+ *
+ */
+function redhen_donation_commerce_iats_credit_card_submit_form_direct_post($payment_method, $pane_form, $pane_values, $order, $charge) {
+  
+}
