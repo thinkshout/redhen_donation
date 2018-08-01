@@ -19,6 +19,8 @@
  * Continue donation process as usual on response from iats.
  */
 
+// TODO: Reimplement commerce_iats_direct_post_relay() for donations.
+
 /**
  * Implements hook_commerce_payment_method_info().
  */
@@ -75,6 +77,9 @@ function redhen_donation_commerce_iats_credit_card_submit_form($payment_method, 
     $form['#attached']['js'] = array(
       drupal_get_path('module', 'redhen_donation_commerce_iats') . '/js/redhen_donation_commerce_iats_dp.js',
     );
+
+    // Change form action so the form POSTs directly to iATS.
+    $form['#action'] = url(COMMERCE_IATS_DIRECT_POST_URL, array('external' => TRUE));
   }
 
   return $form;

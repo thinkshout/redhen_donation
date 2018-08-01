@@ -78,7 +78,10 @@
 
                 // TODO: Post payment information to iATS.
 
-                // Disable submit button - prevent duplicate submissions?
+                // TODO: May need to remove all non direct post fields.
+                // POSTing random stuff to iATS might break something.
+
+                // Disable submit button - prevent duplicate submissions.
                 return false;
             });
         }
