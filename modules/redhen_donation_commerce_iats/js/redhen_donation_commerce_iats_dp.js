@@ -11,15 +11,14 @@
             $('#redhen-donation-form #edit-submit', context).unbind('click').bind('click', function() {
                 // Populate direct post form fields.
 
-                // TODO: ?
-                // IATS_DPM_ProcessID
-
                 // IATS_DPM_Amount
                 // TODO: Needs to work for custom donation amounts.
                 var donation = $("select[name=donation]").val();
                 $("input[name=IATS_DPM_Amount]").val(donation);
 
                 // TODO: Invoice number.
+                // Invoice number isn't available before order is created.
+                // Order is created after form submission. This needs work.
                 // IATS_DPM_Invoice
 
                 // General information about the transaction. May not be needed.
@@ -41,15 +40,19 @@
                 var city = $("input[name='commerce_customer_address[und][0][locality]']").val();
                 $("input[name=IATS_DPM_City]").val(city);
 
-                // TODO
+                // State.
                 // IATS_DPM_Province
+                var state = $("select[name='commerce_customer_address[und][0][administrative_area]']").val();
+                $("input[name=IATS_DPM_Province]").val(state);
 
                 // IATS_DPM_Country
                 var country = $("select[name='commerce_customer_address[und][0][country]']").val();
                 $("input[name=IATS_DPM_Country]").val(country);
 
-                // TODO
+                // Postal code.
                 // IATS_DPM_ZipCode
+                var zip = $("input[name='commerce_customer_address[und][0][postal_code]']").val();
+                $("input[name=IATS_DPM_ZipCode]").val(zip);
 
                 // Method of payment.
                 // IATS_DPM_MOP
