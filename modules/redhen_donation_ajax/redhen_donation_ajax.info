@@ -1,0 +1,6 @@
+name = RedHen Donation AJAX
+description = RedHen Donation functionality exposed for AJAX functionality.
+package = RedHen
+core = 7.x
+
+dependencies[] = redhen_donation

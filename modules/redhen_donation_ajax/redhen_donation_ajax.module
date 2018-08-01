@@ -1,0 +1,28 @@
+<?php
+
+/**
+ * @file
+ * RedHen Donation functionality exposed for AJAX functionality.
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function redhen_donation_ajax_iats_menu() {
+  $items = array();
+
+  $items['redhen_donation/ajax/create'] = array(
+    'page callback' => 'redhen_donation_ajax_create_donation',
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
+/**
+ *
+ */
+function redhen_donation_ajax_create_donation() {
+
+}

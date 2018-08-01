@@ -1,6 +1,8 @@
-name = RedHen Commerce iATS
-description = RedHen customizations for the Commerce iATS payment method.
+name = RedHen Donation Commerce iATS
+description = RedHen Donation customizations for the Commerce iATS payment method.
 package = RedHen
 core = 7.x
 
+dependencies[] = redhen_donation
+dependencies[] = redhen_donation_ajax
 dependencies[] = commerce_iats
