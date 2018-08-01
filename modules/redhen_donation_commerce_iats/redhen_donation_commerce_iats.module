@@ -20,24 +20,6 @@
  */
 
 /**
- * Implements hook_menu().
- */
-function redhen_donation_commerce_iats_menu() {
-  $items = array();
-
-  // Add a form URL for iATS Direct Post payments.
-  $items['commerce_iats/direct_post/%'] = array(
-    'title' => 'Commerce iATS Direct Post Form URL',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('redhen_donation_commerce_iats_credit_card_direct_post_form', 2),
-    'access callback' => 'redhen_donation_commerce_iats_credit_card_direct_post_access',
-    //'type' => MENU_CALLBACK,
-  );
-
-  return $items;
-}
-
-/**
  * Implements hook_commerce_payment_method_info().
  */
 function redhen_donation_commerce_iats_commerce_payment_method_info() {
@@ -111,58 +93,9 @@ function redhen_donation_commerce_iats_credit_card_submit_form_validate($payment
  * Payment method callback: checkout form submission.
  */
 function redhen_donation_commerce_iats_credit_card_submit_form_submit($payment_method, $pane_form, $pane_values, $order, $charge) {
-  // Validate credit card charge.
-  if (empty($charge['amount'])) {
-    $order->revision = TRUE;
-    $order->log = 'Order charge amount is empty.';
-    commerce_order_save($order);
+  module_load_include('inc', 'commerce_iats', 'includes/commerce_iats.credit_card');
 
-    watchdog('commerce_iats', 'Empty charge amount: @charge for order @order', array(
-      '@charge' => '<pre>' . check_plain(print_r($charge, TRUE)) . '</pre>',
-      '@order' => '<pre>' . check_plain(print_r($order, TRUE)) . '</pre>',
-    ), WATCHDOG_DEBUG);
-    return FALSE;
-  }
-
-  $payment_data = $pane_values;
-
-  if (isset($payment_method['settings']['direct_post']['enable_direct_post']) && $payment_method['settings']['direct_post']['enable_direct_post'] == 1) {
-    // Process as direct post credit card payment.
-    // TODO: Redirect to direct post form; pass order ID.
-    //redhen_donation_commerce_iats_credit_card_submit_form_direct_post($payment_method, $pane_form, $pane_values, $order, $charge);
-    return TRUE;
-  }
-  else {
-    // Process as regular credit card payment.
-    return commerce_iats_process_payment($payment_method, $payment_data, $order,
-      $charge, 'commerce_iats_process_credit_card_payment');
-  }
-}
-
-/**
- *
- */
-function redhen_donation_commerce_iats_credit_card_direct_post_form($form, &$form_state, $order_id) {
-  module_load_include('inc', 'commerce_iats', 'includes/commerce_iats.direct_post.forms');
-
-  $order = commerce_order_load($order_id);
-  if (!empty($order)) {
-
-    $payment_method = commerce_payment_method_instance_load('redhen_iats_credit_card|commerce_payment_redhen_iats_credit_card');
-    $direct_post_form = commerce_iats_direct_post_credit_card_form($payment_method, $order);
-
-    return $direct_post_form;
-  }
-
-  return [];
-}
-
-/**
- *
- */
-function redhen_donation_commerce_iats_credit_card_direct_post_access() {
-  // TODO: Check order ownership against current user.
-  return TRUE;
+  return commerce_iats_credit_card_submit_form_submit($payment_method, $pane_form, $pane_values, $order, $charge);
 }
 
 /**
