@@ -13,7 +13,7 @@
             // Attach click handler to populate direct post form fields on submit.
             $('#redhen-donation-form #edit-submit', context).unbind('click').bind('click', function() {
 
-                console.log('Adding click handler via redhen_donation_commerce_iats_dp');
+                console.log('Click handler for redhen_donation_commerce_iats_dp');
 
                 // Populate direct post form fields.
 
@@ -49,7 +49,8 @@
 
                 //$("input[name=IATS_DPM_ExpiryDate]").val(expiry_string);
 
-                return true;
+                // TODO: Disable submit button - prevent duplicate submissions?
+                return false;
             });
         }
     }
