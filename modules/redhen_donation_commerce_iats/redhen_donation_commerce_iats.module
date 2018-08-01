@@ -197,5 +197,26 @@ function redhen_donation_commerce_iats_direct_post_form_base($payment_method) {
     '#default_value' => '',
   );
 
+  // Method of payment.
+  $form['iats_dpm_mop'] = array(
+    '#type' => 'hidden',
+    '#name' => 'IATS_DPM_MOP',
+    '#default_value' => '',
+  );
+
+  // Account (card) number.
+  $form['iats_dpm_account_number'] = array(
+    '#type' => 'hidden',
+    '#name' => 'IATS_DPM_AccountNumber',
+    '#default_value' => '',
+  );
+
+  // CVV2.
+  $form['iats_dpm_cvv2'] = array(
+    '#type' => 'hidden',
+    '#name' => 'IATS_DPM_CVV2',
+    '#default_value' => '',
+  );
+
   return $form;
 }
