@@ -85,6 +85,16 @@ function redhen_donation_commerce_iats_credit_card_submit_form($payment_method, 
     $form['credit_card']['code']['#required'] = FALSE;
   }
 
+  if (isset($payment_method['settings']['direct_post']['enable_direct_post']) && $payment_method['settings']['direct_post']['enable_direct_post'] == 1) {
+    // Add empty direct post form fields.
+    $form['direct_post'] = redhen_donation_commerce_iats_direct_post_form_base($payment_method);
+
+    // Add direct post JavaScript.
+    $form['#attached']['js'] = array(
+      drupal_get_path('module', 'redhen_donation_commerce_iats') . '/js/redhen_donation_commerce_iats_dp.js',
+    );
+  }
+
   return $form;
 }
 
@@ -153,4 +163,106 @@ function redhen_donation_commerce_iats_credit_card_direct_post_form($form, &$for
 function redhen_donation_commerce_iats_credit_card_direct_post_access() {
   // TODO: Check order ownership against current user.
   return TRUE;
+}
+
+/**
+ * Returns an array of form elements common to all Direct Post forms.
+ *
+ * @param array $payment_method
+ *   The current payment method.
+ *
+ * @return array
+ *   Array of common Direct Post form fields.
+ */
+function redhen_donation_commerce_iats_direct_post_form_base($payment_method) {
+  global $base_url;
+
+  $form = array();
+
+  // Relay URL.
+  // TODO: Probably need to customize this for RedHen Donation.
+  $form['iats_dpm_relay_url'] = array(
+    '#type' => 'hidden',
+    '#name' => 'IATS_DPM_RelayURL',
+    '#default_value' => $base_url . '/commerce_iats/direct_post_relay/',
+  );
+
+  // Process Key.
+  $form['iats_dpm_process_key'] = array(
+    '#type' => 'hidden',
+    '#name' => 'IATS_DPM_ProcessID',
+    '#default_value' => $payment_method['settings']['direct_post']['process_key'],
+  );
+
+  // Total processed amount as a decimal.
+  $form['iats_dpm_amount'] = array(
+    '#type' => 'hidden',
+    '#name' => 'IATS_DPM_Amount',
+    '#default_value' => '',
+  );
+
+  // Invoice number.
+  $form['iats_dpm_invoice'] = array(
+    '#type' => 'hidden',
+    '#name' => 'IATS_DPM_Invoice',
+    '#default_value' => '',
+  );
+
+  // Store any general order information here.
+  $form['iats_dpm_comment'] = array(
+    '#type' => 'hidden',
+    '#name' => 'IATS_DPM_Comment',
+    '#default_value' => '',
+  );
+
+  // First name for the end user.
+  $form['iats_dpm_first_name'] = array(
+    '#type' => 'hidden',
+    '#name' => 'IATS_DPM_FirstName',
+    '#default_value' => '',
+  );
+
+  // Last name for the end user.
+  $form['iats_dpm_last_name'] = array(
+    '#type' => 'hidden',
+    '#name' => 'IATS_DPM_LastName',
+    '#default_value' => '',
+  );
+
+  // Address for the end user.
+  $form['iats_dpm_address'] = array(
+    '#type' => 'hidden',
+    '#name' => 'IATS_DPM_Address',
+    '#default_value' => '',
+  );
+
+  // City of the address.
+  $form['iats_dpm_city'] = array(
+    '#type' => 'hidden',
+    '#name' => 'IATS_DPM_City',
+    '#default_value' => '',
+  );
+
+  // Province of the address.
+  $form['iats_dpm_province'] = array(
+    '#type' => 'hidden',
+    '#name' => 'IATS_DPM_Province',
+    '#default_value' => '',
+  );
+
+  // Country of the address.
+  $form['iats_dpm_country'] = array(
+    '#type' => 'hidden',
+    '#name' => 'IATS_DPM_Country',
+    '#default_value' => '',
+  );
+
+  // Zip code of the address.
+  $form['iats_dpm_zip_code'] = array(
+    '#type' => 'hidden',
+    '#name' => 'IATS_DPM_ZipCode',
+    '#default_value' => '',
+  );
+
+  return $form;
 }
