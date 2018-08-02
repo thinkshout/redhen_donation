@@ -21,7 +21,8 @@
                 // Order is created after form submission. This needs work.
                 // IATS_DPM_Invoice
 
-                // General information about the transaction. May not be needed.
+                // TODO: Store order ID and payment method here.
+                // Get order ID by creating donation order via AJAX.
                 // IATS_DPM_Comment
 
                 // IATS_DPM_FirstName

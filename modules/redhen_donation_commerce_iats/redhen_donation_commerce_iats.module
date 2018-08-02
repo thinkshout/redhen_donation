@@ -19,7 +19,22 @@
  * Continue donation process as usual on response from iats.
  */
 
-// TODO: Reimplement commerce_iats_direct_post_relay() for donations.
+/**
+ * Implements hook_menu().
+ */
+function redhen_donation_commerce_iats_menu() {
+  $items = array();
+
+  // Add a callback URL for iATS Direct Post payments.
+  $items['redhen_donation/commerce_iats/direct_post_relay'] = array(
+    'title' => 'Redhen Donation Commerce iATS Direct Post Relay URL',
+    'page callback' => 'redhen_donation_commerce_iats_direct_post_relay',
+    'access callback' => 'redhen_donation_commerce_iats_direct_post_relay_access',
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
 
 /**
  * Implements hook_commerce_payment_method_info().
@@ -146,11 +161,20 @@ function redhen_donation_commerce_iats_direct_post_form_base($payment_method) {
     '#default_value' => '',
   );
 
-  // Store any general order information here.
+  // Send payment method instance ID and truncated direct post key to iATS.
+  // iATS will return this string for verification.
+  // The donation order ID is added to this string later.
+  $comment_parts = array(
+    $payment_method["instance_id"],
+    // Process key used to verify response from iATS.
+    // Trimmed to avoid IATS_DPM_Comment length limit (110 chars.)
+    substr($payment_method['settings']['direct_post']['process_key'], 0, 8),
+  );
+
   $form['iats_dpm_comment'] = array(
     '#type' => 'hidden',
     '#name' => 'IATS_DPM_Comment',
-    '#default_value' => '',
+    '#default_value' => COMMERCE_IATS_COMMENT_PREFIX . implode('|', $comment_parts),
   );
 
   // First name for the end user.
@@ -224,4 +248,142 @@ function redhen_donation_commerce_iats_direct_post_form_base($payment_method) {
   );
 
   return $form;
+}
+
+/**
+ * Relay page for iATS Direct Post response.
+ *
+ * This function creates the page that receives Direct Post payment
+ * responses from the iATS API.
+ *
+ * Processes the response, creates a payment transaction and produces
+ * the client-side JavaScript that iATS uses to redirect the user
+ * back into the checkout process.
+ */
+function redhen_donation_commerce_iats_direct_post_relay() {
+  global $base_url;
+
+  if (isset($_POST['IATS_Comment'])) {
+    $comment = $_POST['IATS_Comment'];
+  }
+  elseif (isset($_POST['IATS_comment'])) {
+    $comment = $_POST['IATS_comment'];
+  }
+
+  if (isset($comment)) {
+    $comment_parts = explode('|', $comment);
+
+    // Parse the order ID and payment method instance ID from the comment
+    // property. Index 0 is the comment prefix, which is not needed here.
+    $order_id = $comment_parts[1];
+    $payment_method_instance_id = $comment_parts[2] . '|' . $comment_parts[3];
+
+    $success = redhen_donation_commerce_iats_direct_post_process_response($_POST, $order_id, $payment_method_instance_id);
+
+    //$target_url = $base_url . '/checkout/' . $order_id;
+    // TODO: Send the user to the appropriate checkout page,
+    // based on transaction success.
+    //$target_url .= ($success) ? '/complete' : '/review';
+  }
+  else {
+    $target_url = $base_url . '/checkout';
+  }
+
+  $markup = "<html>\n"
+    . "<head>\n"
+    . "<script type='text/javascript' charset='utf-8'>\n"
+    . "window.location = '{$target_url}';\n"
+    . "</script>\n"
+    . "</head>\n"
+    . "</html>\n";
+
+  echo $markup;
+  exit();
+}
+
+/**
+ * Determines access to the Direct Post relay URL using values from
+ * the POST request sent by the iATS API.
+ *
+ * @return bool
+ *   TRUE or FALSE indicating relay URL access.
+ */
+function redhen_donation_commerce_iats_direct_post_relay_access() {
+  if (isset($_POST['IATS_Comment'])) {
+    $comment = $_POST['IATS_Comment'];
+  }
+  elseif (isset($_POST['IATS_comment'])) {
+    $comment = $_POST['IATS_comment'];
+  }
+
+  if (isset($comment)) {
+    $comment_parts = explode('|', $comment);
+
+    // Parse the payment method instance ID and process key from the comment
+    // property. Index 0 is the comment prefix, which is not used here.
+    $payment_method_instance_id = $comment_parts[1] . '|' . $comment_parts[2];
+    $process_key = $comment_parts[3];
+
+    $payment_method = commerce_payment_method_instance_load($payment_method_instance_id);
+    if ($payment_method) {
+      // Received process key must match payment method's process key.
+      $payment_method = commerce_payment_method_instance_load($payment_method_instance_id);
+      if (substr($payment_method['settings']['direct_post']['process_key'], 0, 8) == $process_key) {
+        return TRUE;
+      }
+    }
+  }
+
+  return FALSE;
+}
+
+/**
+ * Processes a Direct Post response.
+ *
+ * Creates payment transaction and completes order on payment success.
+ *
+ * @param array $response
+ *   Associative array as described below:
+ *
+ * $response['IATS_AccountNumber'] = '2220';
+ * $response['IATS_MOP'] = 'VISA';
+ * $response['IATS_PaymentType'] = 'CreditCard';
+ * $response['IATS_Result'] = 'OK: 678594:';
+ * $response['IATS_TransID'] = 'A70FC33C';
+ * $response['IATS_Address'] = '123 Street Name';
+ * $response['IATS_City'] = 'City';
+ * $response['IATS_Comment'] = '';
+ * $response['IATS_Country'] = 'US';
+ * $response['IATS_EMail'] = '';
+ * $response['IATS_FirstName'] = 'First Name';
+ * $response['IATS_LastName'] = 'Last Name';
+ * $response['IATS_Phone'] = '';
+ * $response['IATS_Fax'] = '';
+ * $response['IATS_Phone2'] = '';
+ * $response['IATS_State'] = 'State';
+ * $response['IATS_ZipCode'] = '00000';
+ * $response['IATS_Amount'] = '10.00';
+ * $response['IATS_Payment_AgencyCodeHash'] = '984816FD329622876E14907634264E6F332E9FB3';
+ * $response['IATS_ExpiryMonth'] = '04';
+ * $response['IATS_ExpiryYear'] = '2016';
+ * $response['IATS_Payment_SubCode'] = '88';
+ *
+ * @param int $order_id
+ *   The ID of the order being processed.
+ * @param string $payment_method_instance_id
+ *   The instance ID of the payment method used in this transaction.
+ *
+ * @return bool
+ *   TRUE if the transaction was successful.
+ */
+function redhen_donation_commerce_iats_direct_post_process_response(array $response, $order_id, $payment_method_instance_id) {
+  if (!empty($response['IATS_Result'])) {
+    // TODO: Load donation.
+    // TODO: Add payment result to donation.
+    // TODO: Save updated donation.
+
+    return TRUE;
+  }
+
+  return FALSE;
 }
