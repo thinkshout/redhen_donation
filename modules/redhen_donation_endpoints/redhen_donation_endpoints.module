@@ -8,10 +8,10 @@
 /**
  * Implements hook_menu().
  */
-function redhen_donation_ajax_iats_menu() {
+function redhen_donation_endpoints_iats_menu() {
   $items = array();
 
-  $items['redhen_donation/ajax/create'] = array(
+  $items['redhen_donation/endpoints/create'] = array(
     'page callback' => 'redhen_donation_ajax_create_donation',
     'access callback' => TRUE,
     'type' => MENU_CALLBACK,
@@ -23,6 +23,6 @@ function redhen_donation_ajax_iats_menu() {
 /**
  *
  */
-function redhen_donation_ajax_create_donation() {
+function redhen_donation_endpoints_create_donation() {
 
 }
