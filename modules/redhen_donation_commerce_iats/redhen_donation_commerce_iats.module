@@ -16,6 +16,8 @@
  *   POST direct post field data directly to iATS.
  * Add callback to handle response from iats.
  * Continue donation process as usual on response from iats.
+ * Don't allow 'use_cart' option (from form state) to be used for direct post.
+ * Account for recurring donations by collecting a customer code from iATS.
  */
 
 /**

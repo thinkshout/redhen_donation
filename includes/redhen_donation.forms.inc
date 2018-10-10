@@ -869,11 +869,11 @@ function redhen_donation_form_submit($form, &$form_state) {
   }
 
   // Create the donation order.
-  redhen_donation_create_order($donation_type, $product, $donation_user, $contact, $form, $form_state);
+  $order = redhen_donation_create_order($donation_type, $product, $donation_user, $contact, $form, $form_state);
 
+  $order_wrapper = entity_metadata_wrapper('commerce_order', $order);
 
-  // TODO: Process donation order.
-
+  // Process payment.
   if (!$form_state['use_cart']) {
     $order_total = $order_wrapper->commerce_order_total->amount->value();
 
@@ -884,7 +884,7 @@ function redhen_donation_form_submit($form, &$form_state) {
     if (is_callable($callback)) {
       $charge = array(
         'amount' => $order_total,
-        'currency_code' => $currency,
+        'currency_code' => $form_state['currency'],
       );
       // Payment method form.
       $details_form = !empty($form['commerce_payment_form']['payment_details']) ? $form['commerce_payment_form']['payment_details'] : array();
@@ -898,7 +898,6 @@ function redhen_donation_form_submit($form, &$form_state) {
         $details_values['credit_card']['cardonfile_store'] = TRUE;
         $details_values['credit_card']['default'] = TRUE;
       }
-      commerce_line_item_save($line_item);
 
       $callback($payment_method, $details_form, $details_values, $order, $charge);
       $transaction = entity_load('commerce_payment_transaction', FALSE, array('order_id' => $order->order_id));
@@ -916,6 +915,9 @@ function redhen_donation_form_submit($form, &$form_state) {
     }
   }
   // Donation entity handling.
+  // TODO: Verify this is always the correct donation line item.
+  $line_item = current(reset($order_wrapper->commerce_line_items));
+
   $donation->author_uid = $user->uid;
   $donation->contact_id = $contact->contact_id;
   $donation->order_id = $order->order_id;
@@ -1136,6 +1138,8 @@ function redhen_donation_link_recurring_product_to_user($contact, $donation_type
  * @param $contact
  * @param $form
  * @param $form_state
+ *
+ * @return bool|mixed
  */
 function redhen_donation_create_order($donation_type, $product, $donation_user, $contact, $form, $form_state) {
   $order_type
@@ -1193,10 +1197,13 @@ function redhen_donation_create_order($donation_type, $product, $donation_user, 
   module_invoke_all('redhen_donation_order_alter', $order_wrapper, $form, $form_state);
   $order_wrapper->save();
   commerce_order_calculate_total($order);
+
+  return $order;
 }
 
 /**
- *
+ * TODO: Process order, update donation status.
+ * @see redhen_donation_form_submit()
  */
 function redhen_donation_process_order() {
 
