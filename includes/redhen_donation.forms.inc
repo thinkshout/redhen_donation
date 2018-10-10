@@ -841,192 +841,38 @@ function redhen_donation_form_validate($form, &$form_state) {
  */
 function redhen_donation_form_submit($form, &$form_state) {
   global $user;
+
   $settings = $form_state['donation_settings'];
-  $values = $form_state['values'];
   $donation = $form_state['donation'];
   $donation_type = redhen_donation_type_load($donation->bundle());
 
-  // Contact and User handling.
-  $contact = $form_state['redhen_contact'];
-  $new_contact = isset($contact->is_new) && $contact->is_new === TRUE;
+  $user_data = array(
+    'email' => $form_state['values']['email'],
+    'first_name' => $form_state['values']['first_name'],
+    'middle_name' => $form_state['values']['middle_name'],
+    'last_name' => $form_state['values']['last_name'],
+  );
 
-  // Does a contact already exist with that email address?
-  if ($new_contact) {
-    // Attempt to load contact based on given email.
-    if ($contact_email_search = redhen_contact_load_by_mail($form_state['values']['email'])) {
-      $contact = $form_state['redhen_contact'] = current($contact_email_search);
-      $new_contact = FALSE;
-    }
-  }
-
-  $contact_wrapper = entity_metadata_wrapper('redhen_contact', $contact);
-
-  // If set to update fields, do so. Or if new contact create contact.
-  if ($donation_type->settings['contact_settings']['update_fields'] == 1 || $new_contact) {
-    // Save default parameters back into the $contact object.
-    $contact->first_name = $form_state['values']['first_name'];
-    $contact->last_name = $form_state['values']['last_name'];
-    // Middle name can be excluded from the form whereas first and last cannot.
-    // As such, we shouldn't update the middle name if the field isn't present
-    // on the form.
-    $contact->middle_name = empty($form_state['values']['middle_name']) ? $contact_wrapper->middle_name->value() : $form_state['values']['middle_name'];
-
-    // Only update if new.
-    $contact->author_uid = $new_contact ? $contact->author_uid : $user->uid;
-
-    // Notify field widgets.
-    // First name, last name, and email are mandatory - update them.
-    $update_fields = array(
-      'first_name',
-      'last_name',
-      'redhen_email'
-    );
-    // If a Contact address field is selected to sync with the billing profile,
-    // update said field on the Redhen Contact with any changes.
-    if (isset($donation_type->settings['contact_settings']['profile_selector'])) {
-      $update_fields[] = $donation_type->settings['contact_settings']['profile_selector'];
-    }
-    // Only update fields shown on donation form.
-    // This prevents data for all fields not shown on the form getting erased.
-    foreach($donation_type->settings['contact_settings']['fields'] as $contact_field => $update) {
-      if ($update) {
-        $update_fields[] = $contact_field;
-      }
-    }
-
-    // Run field_attach_submit once for each field we want to update rather
-    // than allowing the default behavior of updating all fields in the
-    // entity's bundle.
-    foreach($update_fields as $update_field) {
-      $options = array(
-        'field_name' => $update_field,
-      );
-      field_attach_submit('redhen_contact', $contact, $form, $form_state, $options);
-    }
-
-    // Set Address field if needed.
-    if (!empty($donation_type->settings['contact_settings']['profile_selector']) &&
-        $donation_type->settings['contact_settings']['profile_selector'] != 'billing') {
-      $sync_field = $donation_type->settings['contact_settings']['profile_selector'];
-      $contact_address = array();
-      if (!empty($contact_wrapper->{$sync_field})) {
-        // The wrapper can be set, but the value equal to null in some cases.
-        // Check for this specific case to avoid a notice. More verbose to
-        // support older (< 5.5) PHP versions.
-        $contact_address_value = $contact_wrapper->{$sync_field}->value();
-        $contact_address = (empty($contact_address_value)) ? array() : $contact_address_value;
-      }
-
-      $billing_address = $form_state['values']['commerce_customer_address'][LANGUAGE_NONE][0];
-      $updated_address = array_merge($contact_address, $billing_address);
-      $contact_wrapper->{$sync_field}->set($updated_address);
-
-    }
-
-    // Set email address.
-    $contact_wrapper->email->set($form_state['values']['email']);
-
-    watchdog('redhen_donation', 'RedHen Contact %contact_id has been updated.',
-      array('%contact_id' => $contact->contact_id), WATCHDOG_NOTICE
-    );
-  }
+  $contact = redhen_donation_create_or_update_contact($form_state['redhen_contact'], $donation_type, $user_data, $form, $form_state);
 
   // Load product.
-  $product_sku = $values['product'];
+  $product_sku = $form_state['values']['product'];
   $product = commerce_product_load_by_sku($product_sku);
   $product_wrapper = entity_metadata_wrapper('commerce_product', $product);
   $recurring_product = commerce_recurring_product_is_recurring($product);
 
-  $donation_user = $user;
-  if ($donation_user->uid == 0) {
-    $donation_user = user_load_by_mail($form_state['values']['email']);
-  }
-
   // Link recurring products to the donation user.
+  $donation_user = NULL;
+  $contact_wrapper = entity_metadata_wrapper('redhen_contact', $contact);
   if ($recurring_product && $contact_wrapper->user->value() == NULL) {
-    // We are not logged in and no linked user found create a new one.
-    if (!$donation_user) {
-      $password = user_password();
-      $fields = array(
-        'name' => preg_replace('/[^a-z0-9@_.\'-]/i', '', $form_state['values']['email']),
-        'mail' => $form_state['values']['email'],
-        'pass' => $password,
-        'status' => 1,
-        'init' => $form_state['values']['email'],
-        'roles' => array(
-          DRUPAL_AUTHENTICATED_RID => 'authenticated user',
-        ),
-      );
-      $donation_user = user_save('', $fields);
-
-      if (!empty($donation_type->settings['commerce_settings']['product_options']['recurring_user_register_notify'])) {
-        _user_mail_notify('register_admin_created', $donation_user);
-      }
-    }
-    $contact_wrapper->user->set($donation_user);
-    watchdog('redhen_donation', 'User has been linked to the contact %name.',
-      array('%name' => $contact->label()), WATCHDOG_NOTICE
-    );
+    $donation_user = redhen_donation_link_recurring_product_to_user($contact, $donation_type, $user_data);
   }
 
-  // Save the contact.
-  redhen_contact_save($contact);
+  // Create the donation order.
+  redhen_donation_create_order($donation_type, $product, $donation_user, $contact, $form, $form_state);
 
-  // Commerce handling.
-  $order_type
-       = isset($donation_type->settings['commerce_settings']['order_type']) ?
-    $donation_type->settings['commerce_settings']['order_type'] :
-    'commerce_order';
-  $line_item_type
-       = isset($donation_type->settings['commerce_settings']['line_item_type']) ?
-    $donation_type->settings['commerce_settings']['line_item_type'] :
-    'product';
-  $uid = isset($donation_user->uid) ? $donation_user->uid : 0;
-  if ($form_state['use_cart']) {
-    // Allow dictating of a specific order by donation creator:
-    if (isset($form_state['redhen_donation_order_override'])) {
-      $order = $form_state['redhen_donation_order_override'];
-    }
-    else {
-      // Otherwise attempt to load the customer's shopping cart order.
-      $order = commerce_cart_order_load($uid);
-    }
-  }
-  // If no order existed, create one now.
-  if (empty($order)) {
-    $order = commerce_cart_order_new($uid, $order_type);
-    $order->data['last_cart_refresh'] = REQUEST_TIME;
-    if (empty($order->mail)) {
-      $order->mail = $contact_wrapper->email->value();
-    }
-    commerce_order_save($order);
-  }
-  $order_wrapper = entity_metadata_wrapper('commerce_order', $order);
-  $line_item = commerce_product_line_item_new($product, 1, $order->order_id, array(), $line_item_type);
-  field_attach_submit('commerce_line_item', $line_item, $form['line_item'], $form_state);
-  $donation_amount = $form_state['values']['donation'];
-  $currency = $form_state['currency'];
 
-  redhen_donation_update_line_item_price($line_item, $donation_amount, $currency);
-  // Save the line item to get the ID.
-  commerce_line_item_save($line_item);
-  // Add the item to the list of line items.
-  $order_wrapper->commerce_line_items[] = $line_item;
-
-  if (!$form_state['use_cart']) {
-    $customer_profile = commerce_customer_profile_new('billing', $uid);
-    $customer_profile->commerce_customer_address[LANGUAGE_NONE][0] = array();
-    $billing_address =& $customer_profile->commerce_customer_address[LANGUAGE_NONE][0];
-    $form_state['values']['commerce_customer_address']['und'][0]['name_line'] = $form_state['values']['first_name'] . ' ' . $form_state['values']['last_name'];
-    $billing_address = array_merge($billing_address, $form_state['values']['commerce_customer_address'][LANGUAGE_NONE][0]);
-
-    commerce_customer_profile_save($customer_profile);
-    $order_wrapper->commerce_customer_billing = $customer_profile;
-  }
-  // Allow other modules to alter the order before it is saved.
-  module_invoke_all('redhen_donation_order_alter', $order_wrapper, $form, $form_state);
-  $order_wrapper->save();
-  commerce_order_calculate_total($order);
+  // TODO: Process donation order.
 
   if (!$form_state['use_cart']) {
     $order_total = $order_wrapper->commerce_order_total->amount->value();
@@ -1129,6 +975,231 @@ function redhen_donation_form_submit($form, &$form_state) {
       WATCHDOG_NOTICE
     );
   }
+}
+
+/**
+ * @param $redhen_contact
+ * @param $donation_type
+ * @param array $user_data
+ * @param array $form
+ * @param array $form_state
+ *
+ * @return mixed
+ */
+function redhen_donation_create_or_update_contact($redhen_contact, $donation_type, array $user_data, array $form, array $form_state) {
+  global $user;
+
+  // Contact and User handling.
+  $contact = $redhen_contact;
+  $new_contact = isset($contact->is_new) && $contact->is_new === TRUE;
+
+  // Does a contact already exist with that email address?
+  if ($new_contact) {
+    // Attempt to load contact based on given email.
+    if ($contact_email_search = redhen_contact_load_by_mail($user_data['email'])) {
+      $contact = $redhen_contact = current($contact_email_search);
+      $new_contact = FALSE;
+    }
+  }
+
+  $contact_wrapper = entity_metadata_wrapper('redhen_contact', $contact);
+
+  // If set to update fields, do so. Or if new contact create contact.
+  if ($donation_type->settings['contact_settings']['update_fields'] == 1 || $new_contact) {
+    // Save default parameters back into the $contact object.
+    $contact->first_name = $user_data['first_name'];
+    $contact->last_name = $user_data['last_name'];
+    // Middle name can be excluded from the form whereas first and last cannot.
+    // As such, we shouldn't update the middle name if the field isn't present
+    // on the form.
+    $contact->middle_name = empty($user_data['middle_name']) ? $contact_wrapper->middle_name->value() : $user_data['middle_name'];
+
+    // Only update if new.
+    $contact->author_uid = $new_contact ? $contact->author_uid : $user->uid;
+
+    // Notify field widgets.
+    // First name, last name, and email are mandatory - update them.
+    $update_fields = array(
+      'first_name',
+      'last_name',
+      'redhen_email',
+    );
+    // If a Contact address field is selected to sync with the billing profile,
+    // update said field on the Redhen Contact with any changes.
+    if (isset($donation_type->settings['contact_settings']['profile_selector'])) {
+      $update_fields[] = $donation_type->settings['contact_settings']['profile_selector'];
+    }
+    // Only update fields shown on donation form.
+    // This prevents data for all fields not shown on the form getting erased.
+    foreach($donation_type->settings['contact_settings']['fields'] as $contact_field => $update) {
+      if ($update) {
+        $update_fields[] = $contact_field;
+      }
+    }
+
+    // Run field_attach_submit once for each field we want to update rather
+    // than allowing the default behavior of updating all fields in the
+    // entity's bundle.
+    foreach($update_fields as $update_field) {
+      $options = array(
+        'field_name' => $update_field,
+      );
+      field_attach_submit('redhen_contact', $contact, $form, $form_state, $options);
+    }
+
+    // Set Address field if needed.
+    if (!empty($donation_type->settings['contact_settings']['profile_selector']) &&
+      $donation_type->settings['contact_settings']['profile_selector'] != 'billing') {
+      $sync_field = $donation_type->settings['contact_settings']['profile_selector'];
+      $contact_address = array();
+      if (!empty($contact_wrapper->{$sync_field})) {
+        // The wrapper can be set, but the value equal to null in some cases.
+        // Check for this specific case to avoid a notice. More verbose to
+        // support older (< 5.5) PHP versions.
+        $contact_address_value = $contact_wrapper->{$sync_field}->value();
+        $contact_address = (empty($contact_address_value)) ? array() : $contact_address_value;
+      }
+
+      $billing_address = $form_state['values']['commerce_customer_address'][LANGUAGE_NONE][0];
+      $updated_address = array_merge($contact_address, $billing_address);
+      $contact_wrapper->{$sync_field}->set($updated_address);
+
+    }
+
+    // Set email address.
+    $contact_wrapper->email->set($user_data['email']);
+
+    watchdog('redhen_donation', 'RedHen Contact %contact_id has been updated.',
+      array('%contact_id' => $contact->contact_id), WATCHDOG_NOTICE
+    );
+  }
+
+  // Save the contact.
+  redhen_contact_save($contact);
+
+  return $contact;
+}
+
+/**
+ * @param $contact
+ * @param $donation_type
+ * @param array $user_data
+ *
+ * @return mixed|\stdClass
+ *
+ * @throws \Exception
+ */
+function redhen_donation_link_recurring_product_to_user($contact, $donation_type, array $user_data) {
+  global $user;
+
+  $donation_user = $user;
+  if ($donation_user->uid == 0) {
+    $donation_user = user_load_by_mail($user_data['email']);
+  }
+
+  // We are not logged in and no linked user found create a new one.
+  if (!$donation_user) {
+    $password = user_password();
+    $fields = array(
+      'name' => preg_replace('/[^a-z0-9@_.\'-]/i', '', $user_data['email']),
+      'mail' => $user_data['email'],
+      'pass' => $password,
+      'status' => 1,
+      'init' => $user_data['email'],
+      'roles' => array(
+        DRUPAL_AUTHENTICATED_RID => 'authenticated user',
+      ),
+    );
+    $donation_user = user_save('', $fields);
+
+    if (!empty($donation_type->settings['commerce_settings']['product_options']['recurring_user_register_notify'])) {
+      _user_mail_notify('register_admin_created', $donation_user);
+    }
+  }
+
+  $contact_wrapper = entity_metadata_wrapper('redhen_contact', $contact);
+  $contact_wrapper->user->set($donation_user);
+  watchdog('redhen_donation', 'User has been linked to the contact %name.',
+    array('%name' => $contact->label()), WATCHDOG_NOTICE
+  );
+
+  // Save the contact.
+  redhen_contact_save($contact);
+
+  return $donation_user;
+}
+
+/**
+ * @param $donation_type
+ * @param $product
+ * @param $donation_user
+ * @param $contact
+ * @param $form
+ * @param $form_state
+ */
+function redhen_donation_create_order($donation_type, $product, $donation_user, $contact, $form, $form_state) {
+  $order_type
+    = isset($donation_type->settings['commerce_settings']['order_type']) ?
+    $donation_type->settings['commerce_settings']['order_type'] :
+    'commerce_order';
+  $line_item_type
+    = isset($donation_type->settings['commerce_settings']['line_item_type']) ?
+    $donation_type->settings['commerce_settings']['line_item_type'] :
+    'product';
+  $uid = isset($donation_user->uid) ? $donation_user->uid : 0;
+  if ($form_state['use_cart']) {
+    // Allow dictating of a specific order by donation creator:
+    if (isset($form_state['redhen_donation_order_override'])) {
+      $order = $form_state['redhen_donation_order_override'];
+    }
+    else {
+      // Otherwise attempt to load the customer's shopping cart order.
+      $order = commerce_cart_order_load($uid);
+    }
+  }
+  // If no order existed, create one now.
+  if (empty($order)) {
+    $order = commerce_cart_order_new($uid, $order_type);
+    $order->data['last_cart_refresh'] = REQUEST_TIME;
+    if (empty($order->mail)) {
+      $contact_wrapper = entity_metadata_wrapper('redhen_contact', $contact);
+      $order->mail = $contact_wrapper->email->value();
+    }
+    commerce_order_save($order);
+  }
+  $order_wrapper = entity_metadata_wrapper('commerce_order', $order);
+  $line_item = commerce_product_line_item_new($product, 1, $order->order_id, array(), $line_item_type);
+  field_attach_submit('commerce_line_item', $line_item, $form['line_item'], $form_state);
+  $donation_amount = $form_state['values']['donation'];
+  $currency = $form_state['currency'];
+
+  redhen_donation_update_line_item_price($line_item, $donation_amount, $currency);
+  // Save the line item to get the ID.
+  commerce_line_item_save($line_item);
+  // Add the item to the list of line items.
+  $order_wrapper->commerce_line_items[] = $line_item;
+
+  if (!$form_state['use_cart']) {
+    $customer_profile = commerce_customer_profile_new('billing', $uid);
+    $customer_profile->commerce_customer_address[LANGUAGE_NONE][0] = array();
+    $billing_address =& $customer_profile->commerce_customer_address[LANGUAGE_NONE][0];
+    $form_state['values']['commerce_customer_address']['und'][0]['name_line'] = $form_state['values']['first_name'] . ' ' . $form_state['values']['last_name'];
+    $billing_address = array_merge($billing_address, $form_state['values']['commerce_customer_address'][LANGUAGE_NONE][0]);
+
+    commerce_customer_profile_save($customer_profile);
+    $order_wrapper->commerce_customer_billing = $customer_profile;
+  }
+  // Allow other modules to alter the order before it is saved.
+  module_invoke_all('redhen_donation_order_alter', $order_wrapper, $form, $form_state);
+  $order_wrapper->save();
+  commerce_order_calculate_total($order);
+}
+
+/**
+ *
+ */
+function redhen_donation_process_order() {
+
 }
 
 /**
