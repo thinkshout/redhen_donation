@@ -8,13 +8,12 @@
 /**
  * TODO: If direct post is enabled.
  *
- * Introduce new credit card payment method for RedHen.
- * Replace commerce iats credit card form so direct post fields are not used.
- * Add new submit handler to commerce iats credit card payment method.
- * On submit, collect submitted data and build new form.
- * New form consists of iats direct post form fields.
- * Populate iats direct post form field.
- * Insert javascript used to post form to iats.
+ * Add hidden iATS direct post fields to donation form.
+ * When donation form is submitted, populate direct post fields via JS.
+ * POST donation form to new endpoint in redhen_donation_endpoints module.
+ *   Create customer / order here.
+ * AFTER customer / order have been created:
+ *   POST direct post field data directly to iATS.
  * Add callback to handle response from iats.
  * Continue donation process as usual on response from iats.
  */
@@ -132,12 +131,11 @@ function redhen_donation_commerce_iats_direct_post_form_base($payment_method) {
 
   $form = array();
 
-  // Relay URL.
-  // TODO: Probably need to customize this for RedHen Donation.
+  // Relay URL. This is where iATS will POST transaction results.
   $form['iats_dpm_relay_url'] = array(
     '#type' => 'hidden',
     '#name' => 'IATS_DPM_RelayURL',
-    '#default_value' => $base_url . '/commerce_iats/direct_post_relay/',
+    '#default_value' => $base_url . '/redhen_donation/commerce_iats/direct_post_relay',
   );
 
   // Process Key.
